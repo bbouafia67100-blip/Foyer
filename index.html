@@ -40,6 +40,8 @@ nav button.on{color:var(--acc)}
 .sheet{background:var(--bg);width:100%;border-radius:22px 22px 0 0;padding:20px 20px calc(24px + env(safe-area-inset-bottom));max-height:88%;overflow:auto}
 .sheet h2{margin:0 0 14px;font-size:20px}
 label{display:block;font-size:13px;color:var(--mut);margin:12px 0 5px;font-weight:600}
+input[readonly]{background:#f3f4f6;cursor:default}
+#codeInfo{min-height:20px}
 input,select,textarea{width:100%;padding:13px;border:1px solid var(--line);border-radius:12px;font-size:16px;background:#fff;font-family:inherit}
 .btn{width:100%;padding:15px;border:0;border-radius:14px;background:var(--acc);color:#fff;font-size:16px;font-weight:600;margin-top:18px}
 .btn.sec2{background:#e5e5ea;color:var(--txt);margin-top:8px}.btn.del{background:#fee2e2;color:var(--bad);margin-top:8px}
@@ -144,11 +146,33 @@ function ecouter(){
 
 /* ---------- Onboarding ---------- */
 function ecranAccueil(){
-  $("#app").innerHTML=`<div class="center"><div style="font-size:60px">🏡</div>
-  <h1>Foyer</h1><p class="s">Corvées et projets à deux, synchronisés.</p>
-  <div class="card" style="text-align:left"><label>Votre prénom</label><input id="nom" placeholder="Ex : Alex">
-  <label>Code du foyer (laissez vide pour en créer un)</label><input id="code" placeholder="Ex : K7M2QX" style="text-transform:uppercase">
-  <button class="btn" onclick="rejoindre()">Continuer</button></div></div>`;
+  const params = new URLSearchParams(window.location.search);
+  const hasInvite = params.has("invite");
+  
+  const html = `<div class="center" style="padding-top:40px">
+    <div style="font-size:64px;margin-bottom:8px">🍃</div>
+    <h1>Foyer</h1>
+    <p class="s">Corvées et projets à deux, synchronisés.</p>
+    <div class="card" style="text-align:left;margin-top:32px">
+      <label>Votre prénom</label>
+      <input id="nom" placeholder="Ex : Alex" autocomplete="off">
+      
+      <label style="margin-top:16px">${hasInvite ? "Invitation" : "Code du foyer"}</label>
+      <input id="code" placeholder="Ex : K7M2QX" style="text-transform:uppercase" autocomplete="off">
+      <div id="codeInfo"></div>
+      
+      <p class="s" style="margin-top:12px">
+        ${hasInvite 
+          ? "Vous avez une invitation ! Entrez votre prénom et acceptez." 
+          : "Créez un nouveau foyer ou entrez le code de votre partenaire"}
+      </p>
+      
+      <button class="btn" onclick="rejoindre()" style="margin-top:20px">Continuer</button>
+    </div>
+  </div>`;
+  
+  $("#app").innerHTML = html;
+  verifierInvitation();
 }
 async function rejoindre(){
   const nom=$("#nom").value.trim(); let code=$("#code").value.trim().toUpperCase();
@@ -173,6 +197,109 @@ async function rejoindre(){
   }
   localStorage.setItem("foyer",JSON.stringify({foyerId:foyer.id,moiId:me.id}));
   demarrer();
+}
+  /* Vérifier les invitations à l'accueil */
+function verifierInvitation(){
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("invite");
+  
+  if(token){
+    $("#code").value = token;
+    $("#code").readOnly = true;
+    $("#codeInfo").innerHTML = `<div style="color:var(--ok);font-size:13px;margin-top:4px">✅ Invitation détectée</div>`;
+    $("#nom").focus();
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+}
+
+async function rejoindre(){
+  const nom = $("#nom").value.trim();
+  const codeOuToken = $("#code").value.trim().toUpperCase();
+  
+  if(!nom) return alert("Entrez votre prénom");
+  if(!codeOuToken) return alert("Entrez un code ou acceptez une invitation");
+  
+  let foyer;
+  let estInvitation = false;
+  
+  // Vérifier si c'est une invitation (token long) ou un code classique
+  if(codeOuToken.length >= 8){
+    // C'est un token d'invitation
+    const {data: inv} = await sb.from("invitations")
+      .select("foyers(*)")
+      .eq("token", codeOuToken)
+      .gt("expires_at", new Date().toISOString())
+      .eq("used", false)
+      .maybeSingle();
+    
+    if(!inv) return alert("Invitation invalide, expirée ou déjà utilisée");
+    foyer = inv.foyers;
+    estInvitation = true;
+  } else {
+    // Code de foyer classique (6 caractères)
+    const {data} = await sb.from("foyers").select("*").eq("code", codeOuToken).maybeSingle();
+    if(!data) return alert("Code introuvable");
+    foyer = data;
+  }
+  
+  // Vérifier si ce prénom existe déjà
+  const {data:existants} = await sb.from("membres").select("*").eq("foyer_id", foyer.id);
+  let me = (existants||[]).find(m => m.nom.trim().toLowerCase() === nom.toLowerCase());
+  
+  if(!me){
+    const {data, error:e2} = await sb.from("membres").insert({
+      foyer_id: foyer.id,
+      nom,
+      couleur: COULEURS[(existants||[]).length % COULEURS.length]
+    }).select().single();
+    if(e2) return alert("Erreur : "+e2.message);
+    me = data;
+  }
+  
+  // Marquer l'invitation comme utilisée
+  if(estInvitation){
+    await sb.from("invitations").update({used: true, used_by: me.id}).eq("token", codeOuToken);
+  }
+  
+  localStorage.setItem("foyer", JSON.stringify({foyerId: foyer.id, moiId: me.id}));
+  demarrer();
+}
+
+/* Générer une invitation */
+async function genererInvitation(){
+  const token = Math.random().toString(36).slice(2, 8).toUpperCase() + Math.random().toString(36).slice(2, 8).toUpperCase();
+  const expires = new Date();
+  expires.setDate(expires.getDate() + 1); // 24h
+  
+  const {error} = await sb.from("invitations").insert({
+    foyer_id: S.foyer.id,
+    token,
+    created_by: S.moi.id,
+    expires_at: expires.toISOString()
+  });
+  
+  if(error) return alert("Erreur : "+error.message);
+  
+  const lien = `${window.location.origin}${window.location.pathname}?invite=${token}`;
+  afficherPartageInvitation(lien);
+}
+
+function afficherPartageInvitation(lien){
+  ouvrir(`<div style="text-align:center;padding:20px 0">
+    <div style="font-size:48px;margin-bottom:12px">🍃</div>
+    <h2>Inviter un membre</h2>
+    <p class="s">Partagez ce lien à votre partenaire</p>
+  </div>
+  <div class="card" style="background:#f3f4f6;word-break:break-all;font-family:monospace;font-size:12px;padding:12px">${esc(lien)}</div>
+  <button class="btn" onclick="
+    navigator.clipboard.writeText('${esc(lien)}');
+    const btn = event.target;
+    btn.textContent = '✅ Copié !';
+    setTimeout(() => btn.textContent = '📋 Copier le lien', 2000);
+  ">📋 Copier le lien</button>
+  ${navigator.share ? `<button class="btn sec2" onclick="navigator.share({title:'Foyer 🍃',text:'Rejoignez mon foyer Foyer',url:'${esc(lien)}'}).catch(()=>{})">📤 Partager</button>` : ""}
+  <p class="s" style="margin-top:20px;color:var(--mut)">Valide pendant 24 heures</p>
+  `);
 }
 async function demarrer(){
   const ls=JSON.parse(localStorage.getItem("foyer")||"null");
@@ -374,7 +501,9 @@ function vueBilan(){
   ${pts.map(x=>`<div class="row" style="margin-top:10px">${av(x.m)}<div class="grow t">${esc(x.m.nom)}</div><div class="t">${x.p} pts · ${Math.round(x.p/tot*100)} %</div></div>`).join("")}</div>
   <div class="sec">Activité récente</div>`+
   (S.histo.slice(0,15).map(h=>`<div class="card row">${av(membre(h.membre_id))}<div class="grow"><div class="t">${esc(h.titre)}</div><div class="s">${new Date(h.fait_le).toLocaleString("fr-FR",{weekday:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})}</div></div><span class="pill">+${h.points}</span></div>`).join("")||`<div class="card s">Pas encore d'activité.</div>`)+
-  `<div class="sec">Foyer</div><div class="card"><div class="s">Code à partager avec votre partenaire</div><div class="stat" style="letter-spacing:4px">${esc(S.foyer.code)}</div>
+  `<div class="sec">Foyer</div>
+  <div class="card"><div class="s">Code de ce foyer</div><div class="stat" style="letter-spacing:4px;margin-bottom:12px">${esc(S.foyer.code)}</div>
+  <button class="btn" onclick="genererInvitation()">🍃 Inviter mon partenaire</button>
   <button class="btn sec2" onclick="if(confirm('Quitter ce foyer sur cet appareil ?')){localStorage.removeItem('foyer');location.reload()}">Se déconnecter</button></div>`;
 }
 
