@@ -65,7 +65,10 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s??"").split("&").join("\u0026amp;").split("<").join("\u0026lt;").split(">").join("\u0026gt;").split('"').join("\u0026quot;").split("'").join("\u0026#39;");
 let S = {foyer:null,moi:null,membres:[],corvees:[],projets:[],histo:[],tab:"today",modal:null,filtre:"tous"};
 
-const today = () => new Date().toISOString().slice(0,10);
+const today = () => {
+  const d = new Date();
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+};
 const jours = d => Math.floor((new Date(today()) - new Date(d)) / 864e5);
 function echeance(c){
   if(!c.derniere_fois) return -1; // jamais fait = en retard
