@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Foyer">
 <meta name="theme-color" content="#f6f5f1">
@@ -47,13 +47,11 @@ nav button.on{color:var(--acc)}
 .sheet h2{margin:0 0 14px;font-size:20px}
 label{display:block;font-size:13px;color:var(--mut);margin:12px 0 5px;font-weight:600}
 input[readonly]{background:#f3f4f6;cursor:default}
-#codeInfo{min-height:20px}
 input,select,textarea{width:100%;padding:13px;border:1px solid var(--line);border-radius:12px;font-size:16px;background:#fff;font-family:inherit}
 .btn{width:100%;padding:15px;border:0;border-radius:14px;background:var(--acc);color:#fff;font-size:16px;font-weight:600;margin-top:18px;cursor:pointer;transition:all 0.2s ease}
 .btn:active{transform:scale(0.98)}
 .btn.sec2{background:#e5e5ea;color:var(--txt);margin-top:8px}.btn.del{background:#fee2e2;color:var(--bad);margin-top:8px}
 .bar{height:10px;border-radius:99px;background:#e5e5ea;overflow:hidden;display:flex;margin:8px 0}
-.seg{font-size:11px}
 .center{text-align:center;padding:50px 24px}
 .chips{display:flex;gap:8px;overflow-x:auto;padding:4px 0;margin:8px 0}
 .chip{padding:8px 14px;border-radius:99px;background:#e5e5ea;font-size:14px;white-space:nowrap;border:0;cursor:pointer;transition:all 0.2s ease}
@@ -72,18 +70,9 @@ input,select,textarea{width:100%;padding:13px;border:1px solid var(--line);borde
 .jour.on .jb i{background:#fff;color:var(--acc,#4f46e5)}
 .semcols{display:grid;grid-template-columns:1fr;gap:4px}
 @media(min-width:720px){.semcols{grid-template-columns:1fr 1fr;gap:16px}.bande{gap:10px}}
-@keyframes bounce {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(0.95); }
-}
-@keyframes slideIn {
-  from { transform: translateY(100%); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+@keyframes bounce{0%,100%{transform:scale(1)}50%{transform:scale(0.95)}}
+@keyframes slideIn{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
 </style>
 </head>
 <body>
@@ -108,9 +97,7 @@ const today = () => {
   return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
 };
 
-const jours = function(d) {
-  return Math.floor((new Date(today() + "T00:00:00") - new Date(d + "T00:00:00")) / 864e5);
-};
+const jours = d => Math.floor((new Date(today() + "T00:00:00") - new Date(d + "T00:00:00")) / 864e5);
 
 function echeance(c){
   if(!c.derniere_fois) return -1;
@@ -132,7 +119,7 @@ function lundiDe(d){
 function joursSemaine(){
   const l = lundiDe(new Date());
   l.setDate(l.getDate() + S.semDec * 7);
-  return Array.from({length: 7}, function(_, i){
+  return Array.from({length: 7}, (_, i) => {
     const d = new Date(l);
     d.setDate(l.getDate() + i);
     return d;
@@ -155,16 +142,11 @@ function occurrences(c, debutISO, finISO){
   let garde = 0;
   while(iso(dateActuelle) <= finISO && garde++ < 400){
     const dateStr = iso(dateActuelle);
-    
     if(dateStr < t){ 
-      if(t >= debutISO && t <= finISO && !res.includes(t)) {
-        res.push(t);
-      }
-    } 
-    else if(dateStr >= debutISO) {
+      if(t >= debutISO && t <= finISO && !res.includes(t)) res.push(t);
+    } else if(dateStr >= debutISO) {
       res.push(dateStr);
     }
-    
     dateActuelle.setDate(dateActuelle.getDate() + c.frequence_jours);
   }
   
@@ -172,12 +154,10 @@ function occurrences(c, debutISO, finISO){
 }
 
 function corveesDuJour(s){
-  return S.corvees.filter(function(c){
-    return occurrences(c, s, s).includes(s);
-  });
+  return S.corvees.filter(c => occurrences(c, s, s).includes(s));
 }
 
-const membre = id => S.membres.find(m=>m.id===id);
+const membre = id => S.membres.find(m => m.id === id);
 
 function av(m){ 
   return m ? `<div class="av" style="background:${esc(m.couleur)}">${esc(m.nom[0].toUpperCase())}</div>` : `<div class="av" style="background:#ccc">?</div>`;
@@ -189,7 +169,6 @@ function aviconsMembres(liste) {
   return `<div class="avatars">${avatars}</div>`;
 }
 
-// ===== CHARGER (avec multi-assignés) =====
 async function charger(){
   console.log("📥 Chargement des données...");
   
@@ -213,52 +192,26 @@ async function charger(){
     S.projets = p.data || [];
     S.histo = h.data || [];
 
-    // Charger les assignés pour chaque corvée
-    S.corvees = await Promise.all(S.corvees.map(async function(corvee) {
-      try {
-        const {data: assignes} = await sb.from("corvee_membres")
-          .select("membre_id")
-          .eq("corvee_id", corvee.id);
-        
-        corvee.assigne_a_list = assignes && assignes.length > 0 ? assignes.map(function(a) { return a.membre_id; }) : [];
-        corvee.assigne_a = corvee.assigne_a_list[0] || null;
-      } catch(err) {
-        console.warn("⚠️ Erreur chargement assignés pour corvée", corvee.id, err);
-        corvee.assigne_a_list = corvee.assigne_a ? [corvee.assigne_a] : [];
-      }
-      return corvee;
-    }));
-
-    console.log("✅ Données chargées");
+    console.log("✅ Données chargées :", S.corvees.length, "corvées");
     render();
   } catch(err) {
     console.error("❌ Erreur charger :", err);
+    alert("Erreur chargement : " + err.message);
   }
 }
 
-// ===== ÉCOUTER =====
 function ecouter(){
-  if(!S.foyer) return;
-  
   const f = "foyer_id=eq." + S.foyer.id;
   const ch = sb.channel("foyer-" + S.foyer.id);
   
-  ["corvees", "projets", "historique", "membres", "corvee_membres"].forEach(function(t) {
-    ch.on("postgres_changes", {
-      event: "*",
-      schema: "public",
-      table: t,
-      filter: f
-    }, function() {
-      console.log("🔄 Changement détecté sur", t);
-      charger();
-    });
+  ["corvees", "projets", "historique", "membres"].forEach(t => {
+    ch.on("postgres_changes", {event: "*", schema: "public", table: t, filter: f}, () => charger());
   });
   
   ch.subscribe();
+  console.log("👂 Écoute activée");
 }
 
-// ===== AFFICHER UNDO =====
 let undoTimer = null;
 function afficherUndo(titre){
   clearTimeout(undoTimer);
@@ -274,7 +227,6 @@ function afficherUndo(titre){
   undoTimer = setTimeout(() => d.remove(), 6000);
 }
 
-// ===== ANNULER =====
 async function annuler(){
   if(!dernierUndo) return;
   const u = dernierUndo;
@@ -283,7 +235,7 @@ async function annuler(){
   
   try {
     if(u.histoId) await sb.from("historique").delete().eq("id", u.histoId);
-    await sb.from("corvees").update({derniere_fois: u.ancienneDate, assigne_a: u.ancienAssigne}).eq("id", u.corveeId);
+    await sb.from("corvees").update({derniere_fois: u.ancienneDate, assigne_a_list: u.ancienAssigne}).eq("id", u.corveeId);
     await charger();
   } catch(err) {
     console.error("❌ Erreur annulation :", err);
@@ -291,11 +243,10 @@ async function annuler(){
   }
 }
 
-// ===== FAIRE (avec multi-assignés) =====
 async function faire(id){
   console.log("👉 Marquer comme faite :", id);
   
-  const c = S.corvees.find(function(x) { return x.id === id; });
+  const c = S.corvees.find(x => x.id === id);
   if(!c) {
     console.error("❌ Corvée introuvable");
     return;
@@ -305,129 +256,53 @@ async function faire(id){
   const assignesActuels = c.assigne_a_list && c.assigne_a_list.length > 0 ? c.assigne_a_list : (c.assigne_a ? [c.assigne_a] : []);
   
   try {
-    // 1. Ajouter à l'historique pour CHAQUE assigné
-    const historiqueEntrees = assignesActuels.map(function(membre_id) {
-      return {
-        foyer_id: S.foyer.id,
-        corvee_id: c.id,
-        membre_id: membre_id,
-        titre: c.titre,
-        points: c.points,
-        fait_le: dateAuj,
-        fait_par: S.moi.id
-      };
-    });
+    const historiqueEntrees = assignesActuels.map(membre_id => ({
+      foyer_id: S.foyer.id,
+      corvee_id: c.id,
+      membre_id: membre_id,
+      titre: c.titre,
+      points: c.points,
+      fait_le: dateAuj,
+      fait_par: S.moi.id
+    }));
     
     const histoResult = await sb.from("historique").insert(historiqueEntrees).select();
     const h = histoResult.data && histoResult.data[0];
     
     console.log("💾 Historique créé pour", assignesActuels.length, "personne(s)");
     
-    // 2. Calculer les nouveaux assignés (rotation)
     let suivants = assignesActuels;
     if(c.rotation && S.membres.length > 1) {
-      suivants = assignesActuels.map(function(ancien_id) {
-        const i = S.membres.findIndex(function(m) { return m.id === ancien_id; });
+      suivants = assignesActuels.map(ancien_id => {
+        const i = S.membres.findIndex(m => m.id === ancien_id);
         return S.membres[(i + 1) % S.membres.length].id;
       });
     }
     
-    // 3. Mettre à jour la corvée
     console.log("💾 Mise à jour derniere_fois à :", dateAuj);
     
     await sb.from("corvees").update({
       derniere_fois: dateAuj,
-      assigne_a: suivants[0] || null
+      assigne_a_list: suivants
     }).eq("id", id);
     
-    // 4. Mettre à jour les assignés
-    await sb.from("corvee_membres").delete().eq("corvee_id", id);
-    
-    const nouvelles_assignations = suivants.map(function(membre_id) {
-      return {
-        corvee_id: id,
-        membre_id: membre_id
-      };
-    });
-    
-    if(nouvelles_assignations.length > 0) {
-      await sb.from("corvee_membres").insert(nouvelles_assignations);
-    }
-    
-    console.log("✅ Corvée mise à jour");
-    
-    // 5. Sauvegarder pour l'undo
     dernierUndo = {
       corveeId: id,
       histoId: h ? h.id : null,
       ancienneDate: c.derniere_fois || null,
-      ancienAssigne: c.assigne_a
+      ancienAssigne: c.assigne_a_list || [c.assigne_a]
     };
     
-    // 6. Feedback
     if(navigator.vibrate) navigator.vibrate(30);
     await charger();
     afficherUndo(c.titre);
     
   } catch(err) {
     console.error("❌ Erreur :", err);
-    alert("Erreur : " + err.message);
+    alert("Erreur en sauvegardant : " + err.message);
   }
 }
 
-// ===== SAUVER CORVÉE =====
-async function sauverCorvee(id){
-  const titre = document.getElementById("f-titre").value.trim();
-  const piece = document.getElementById("f-piece").value.trim();
-  const frequence_jours = +document.getElementById("f-freq").value;
-  const rotation = document.getElementById("f-rot").checked;
-  const points = +document.getElementById("f-pts").value || 1;
-  
-  // Récupérer les checkboxes cochées
-  const checksMembres = [...document.querySelectorAll(".f-membre:checked")];
-  const assignes = checksMembres.map(ch => ch.value);
-  
-  if(!titre) return alert("Titre requis");
-  
-  try {
-    const o = {
-      foyer_id: S.foyer.id,
-      titre: titre,
-      piece: piece,
-      frequence_jours: frequence_jours,
-      rotation: rotation,
-      points: points,
-      assigne_a: assignes.length > 0 ? assignes[0] : null
-    };
-    
-    if(id) {
-      await sb.from("corvees").update(o).eq("id", id);
-    } else {
-      const result = await sb.from("corvees").insert(o).select();
-      const newCorvee = result.data[0];
-      id = newCorvee.id;
-    }
-    
-    // Sauvegarder les assignés
-    await sb.from("corvee_membres").delete().eq("corvee_id", id);
-    
-    if(assignes.length > 0) {
-      const assignations = assignes.map(membre_id => ({
-        corvee_id: id,
-        membre_id: membre_id
-      }));
-      await sb.from("corvee_membres").insert(assignations);
-    }
-    
-    fermer();
-    await charger();
-  } catch(err) {
-    console.error("❌ Erreur :", err);
-    alert("Erreur : " + err.message);
-  }
-}
-
-// ===== MODÈLES =====
 const MODELES = [
   ["Passer l'aspirateur","RDC",7,2],["Passer l'aspirateur","Étage",7,2],
   ["Passer la serpillère","RDC",14,2],["Passer la serpillère","Étage",14,2],
@@ -443,13 +318,13 @@ const MODELES = [
 
 function formModeles(){
   const groupes = {};
-  MODELES.forEach((m,i) => {
+  MODELES.forEach((m, i) => {
     (groupes[m[0]] = groupes[m[0]] || []).push(i);
   });
   
   ouvrir(`<h2>Corvées types</h2><p class="s">Cochez celles à ajouter, vous pourrez les modifier ensuite.</p>
-  ${Object.entries(groupes).map(([titre,idx]) => 
-    `<div class="t" style="margin-top:14px">${esc(titre)}</div>`+
+  ${Object.entries(groupes).map(([titre, idx]) => 
+    `<div class="t" style="margin-top:14px">${esc(titre)}</div>` +
     idx.map(i => 
       `<label style="display:flex;gap:10px;align-items:center;color:var(--txt);font-size:16px;font-weight:500;margin:6px 0">
         <input type="checkbox" class="mod" value="${i}" style="width:auto"> 
@@ -470,26 +345,19 @@ async function ajouterModeles(){
       frequence_jours: m[2],
       points: m[3],
       rotation: true,
-      assigne_a: S.moi.id
+      assigne_a_list: [S.moi.id]
     };
   });
   
   if(!lignes.length) return fermer();
   
   try {
-    const result = await sb.from("corvees").insert(lignes).select();
-    
-    // Assigner à l'utilisateur courant
-    const assignations = result.data.map(corvee => ({
-      corvee_id: corvee.id,
-      membre_id: S.moi.id
-    }));
-    
-    await sb.from("corvee_membres").insert(assignations);
+    await sb.from("corvees").insert(lignes);
+    console.log("✅ Modèles ajoutés");
     fermer();
     await charger();
   } catch(err) {
-    console.error("❌ Erreur :", err);
+    console.error("❌ Erreur insertion :", err);
     alert("Erreur : " + err.message);
   }
 }
@@ -506,14 +374,45 @@ async function supprimer(table, id){
   }
 }
 
+async function sauverCorvee(id){
+  const assignesCoches = [...document.querySelectorAll(".f-membre:checked")].map(x => x.value);
+  const assignesFinal = assignesCoches.length > 0 ? assignesCoches : null;
+  
+  const o = {
+    foyer_id: S.foyer.id,
+    titre: document.getElementById("f-titre").value.trim(),
+    piece: document.getElementById("f-piece").value.trim(),
+    frequence_jours: +document.getElementById("f-freq").value,
+    assigne_a_list: assignesFinal,
+    rotation: document.getElementById("f-rot").checked,
+    points: +document.getElementById("f-pts").value || 1
+  };
+  
+  if(!o.titre) return alert("Titre requis");
+  if(!assignesFinal) return alert("Sélectionnez au moins une personne");
+  
+  try {
+    if(id) {
+      await sb.from("corvees").update(o).eq("id", id);
+    } else {
+      await sb.from("corvees").insert(o);
+    }
+    fermer();
+    await charger();
+  } catch(err) {
+    console.error("❌ Erreur :", err);
+    alert("Erreur : " + err.message);
+  }
+}
+
 async function sauverProjet(id){
   const o = {
     foyer_id: S.foyer.id,
-    titre: $("#p-titre").value.trim(),
-    statut: $("#p-statut").value,
-    cout: +$("#p-cout").value || 0,
-    assigne_a: $("#p-ass").value || null,
-    notes: $("#p-notes").value
+    titre: document.getElementById("p-titre").value.trim(),
+    statut: document.getElementById("p-statut").value,
+    cout: +document.getElementById("p-cout").value || 0,
+    assigne_a: document.getElementById("p-ass").value || null,
+    notes: document.getElementById("p-notes").value
   };
   
   if(!o.titre) return alert("Titre requis");
@@ -540,7 +439,6 @@ async function changerStatut(id, statut){
   }
 }
 
-/* ---------- Modales ---------- */
 function fermer(){
   S.modal = null;
   const modal = document.getElementById("modal");
@@ -554,22 +452,19 @@ function ouvrir(html){
   d.id = "modal";
   d.className = "modal";
   d.innerHTML = '<div class="sheet">' + html + '</div>';
-  d.onclick = function(e) {
+  d.onclick = e => {
     if(e.target === d) fermer();
   };
   document.body.appendChild(d);
 }
 
-const optsMembres = function(sel) {
-  return '<option value="">— Personne —</option>' + 
-    S.membres.map(function(m) {
-      return '<option value="' + m.id + '" ' + (m.id === sel ? 'selected' : '') + '>' + esc(m.nom) + '</option>';
-    }).join("");
-};
+const optsMembres = sel => 
+  '<option value="">— Personne —</option>' + 
+  S.membres.map(m => '<option value="' + m.id + '" ' + (m.id === sel ? 'selected' : '') + '>' + esc(m.nom) + '</option>').join("");
 
 function checkboxesMembres(liste) {
   return '<div style="margin-top:10px">' +
-    S.membres.map(function(m) {
+    S.membres.map(m => {
       const checked = liste && liste.includes(m.id) ? 'checked' : '';
       return `<label style="display:flex;gap:10px;align-items:center;color:var(--txt);font-size:16px;font-weight:500;margin:8px 0">
         <input type="checkbox" class="f-membre" value="${m.id}" ${checked} style="width:auto">
@@ -580,7 +475,7 @@ function checkboxesMembres(liste) {
 }
 
 function formCorvee(id){
-  const c = S.corvees.find(function(x) { return x.id === id; }) || {frequence_jours:7, rotation:true, points:1, assigne_a: S.moi.id};
+  const c = S.corvees.find(x => x.id === id) || {frequence_jours:7, rotation:true, points:1, assigne_a_list: [S.moi.id]};
   
   ouvrir('<h2>' + (id ? "Modifier" : "Nouvelle") + ' corvée</h2>' +
     '<label>Titre</label><input id="f-titre" value="' + esc(c.titre||"") + '" placeholder="Passer l\'aspirateur">' +
@@ -595,7 +490,7 @@ function formCorvee(id){
 }
 
 function formProjet(id){
-  const p = S.projets.find(function(x) { return x.id === id; }) || {statut:"idee", cout:0, notes:""};
+  const p = S.projets.find(x => x.id === id) || {statut:"idee", cout:0, notes:""};
   
   let statuts = '';
   for(let k in STATUTS) {
@@ -612,7 +507,6 @@ function formProjet(id){
     (id ? '<button class="btn del" onclick="supprimer(\'projets\',\'' + id + '\')">Supprimer</button>' : ''));
 }
 
-/* ---------- Vues ---------- */
 function carteCorvee(c, montrerBtn = true){
   const e = echeance(c);
   let pill, couleur;
@@ -677,13 +571,13 @@ function vueSemaine(){
   const fin = iso(jours[6]);
   
   return `<div class="semnav">
-    <button onclick="S.semDec--;render()" style="flex:none;width:40px;height:40px;border-radius:50%;border:0;background:#e5e5ea;cursor:pointer">←</button>
+    <button onclick="S.semDec--;render()" style="flex:none;width:40px;height:40px;border-radius:50%;border:0;background:#e5e5ea">←</button>
     <div style="flex:1;text-align:center">
       <div class="t">${new Date(debut).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})} - ${new Date(fin).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})}</div>
     </div>
-    <button onclick="S.semDec++;render()" style="flex:none;width:40px;height:40px;border-radius:50%;border:0;background:#e5e5ea;cursor:pointer">→</button>
+    <button onclick="S.semDec++;render()" style="flex:none;width:40px;height:40px;border-radius:50%;border:0;background:#e5e5ea">→</button>
   </div>
-  <div class="bande">${jours.map((d,i) => {
+  <div class="bande">${jours.map((d, i) => {
     const s = iso(d);
     const corvees = corveesDuJour(s);
     const isToday = s === today();
@@ -693,8 +587,7 @@ function vueSemaine(){
       <span class="jb"><i>${corvees.length}</i></span>
     </button>`;
   }).join("")}</div>
-  ${S.jourSel ? `<div class="sec">${new Date(S.jourSel).toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})}</div>` + (corveesDuJour(S.jourSel).map(c => carteCorvee(c, true)).join("") || `<div class="card s">Aucune corvée ce jour</div>`) : ""}
-  `;
+  ${S.jourSel ? `<div class="sec">${new Date(S.jourSel).toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})}</div>` + (corveesDuJour(S.jourSel).map(c => carteCorvee(c, true)).join("") || `<div class="card s">Aucune corvée ce jour</div>`) : ""}`;
 }
 
 function vueProjets(){
@@ -737,8 +630,8 @@ function render(){
   if(!S.foyer) return;
   if(S.modal) return;
   
-  const [t,sub] = TITRES[S.tab];
-  const vues = {today:vueToday, semaine:vueSemaine, corvees:vueCorvees, projets:vueProjets, bilan:vueBilan};
+  const [t, sub] = TITRES[S.tab];
+  const vues = {today: vueToday, semaine: vueSemaine, corvees: vueCorvees, projets: vueProjets, bilan: vueBilan};
   
   const main = $("main");
   const sc = main?.scrollTop || 0;
@@ -751,7 +644,7 @@ function render(){
   if(newMain) newMain.scrollTop = sc;
 }
 
-/* ---------- Démarrage ---------- */
+/* ---------- Authentification ---------- */
 function ecranAccueil(){
   $("#app").innerHTML = `<div class="center"><div style="font-size:60px">🏡</div>
   <h1>Foyer</h1><p class="s">Corvées et projets à deux, synchronisés.</p>
@@ -828,7 +721,7 @@ async function demarrer(){
   }
 }
 
-// ===== LANCER AU DÉMARRAGE =====
+// ===== LANCER =====
 if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 
 demarrer();
