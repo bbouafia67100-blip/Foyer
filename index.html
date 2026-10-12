@@ -90,9 +90,12 @@ async function charger(){
   render();
 }
 function ecouter(){
-  sb.channel("foyer-"+S.foyer.id)
-    .on("postgres_changes",{event:"*",schema:"public"},()=>charger())
-    .subscribe();
+  const f = "foyer_id=eq."+S.foyer.id;
+  const ch = sb.channel("foyer-"+S.foyer.id);
+  ["corvees","projets","historique","membres"].forEach(t=>{
+    ch.on("postgres_changes",{event:"*",schema:"public",table:t,filter:f},()=>charger());
+  });
+  ch.subscribe();
 }
 
 /* ---------- Onboarding ---------- */
