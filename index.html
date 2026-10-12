@@ -47,7 +47,7 @@ input,select,textarea{width:100%;padding:13px;border:1px solid var(--line);borde
 .seg{font-size:11px}
 .center{text-align:center;padding:50px 24px}
 .chips{display:flex;gap:8px;overflow-x:auto;padding:4px 0}
-.chip{padding:8px 14px;border-radius:99px;background:#e5e5ea;font-size:14px;white-space:nowrap;border:0}
+.chip{padding:8px 14px;border-radius:99px;background:#e5e5ea;font-size:14px;white-space:nowrap;border:0;cursor:pointer}
 .chip.on{background:var(--acc);color:#fff}
 .stat{font-size:34px;font-weight:700}
 .semnav{display:flex;align-items:center;gap:8px;margin:4px 0 12px}
@@ -84,9 +84,10 @@ const today = () => {
 };
 const jours = d => Math.floor((new Date(today()) - new Date(d)) / 864e5);
 function echeance(c){
-  if(!c.derniere_fois) return -1; // jamais fait = en retard
-  return c.frequence_jours - jours(c.derniere_fois); // jours restants
+  if(!c.derniere_fois) return -1;
+  return c.frequence_jours - jours(c.derniere_fois);
 }
+
 /* ---------- Semaine ---------- */
 const JOURS_COURTS=["L","M","M","J","V","S","D"];
 function iso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
@@ -95,11 +96,10 @@ function joursSemaine(){
   const l=lundiDe(new Date());l.setDate(l.getDate()+S.semDec*7);
   return Array.from({length:7},(_,i)=>{const d=new Date(l);d.setDate(l.getDate()+i);return d;});
 }
-// Dates (ISO) où une corvée est due, entre deux bornes
 function occurrences(c,debutISO,finISO){
   const res=[];
   const t=today();
-  if(!c.derniere_fois){ // jamais faite : due maintenant
+  if(!c.derniere_fois){
     if(t>=debutISO&&t<=finISO) res.push(t);
     return res;
   }
@@ -108,7 +108,7 @@ function occurrences(c,debutISO,finISO){
   let garde=0;
   while(iso(d)<=finISO&&garde++<400){
     const s=iso(d);
-    if(s<t){ // en retard : affichée aujourd'hui
+    if(s<t){
       if(t>=debutISO&&t<=finISO&&!res.includes(t)) res.push(t);
     } else if(s>=debutISO) res.push(s);
     d.setDate(d.getDate()+c.frequence_jours);
@@ -165,11 +165,14 @@ async function rejoindre(){
     foyer=data;
   }
   const {data:existants}=await sb.from("membres").select("*").eq("foyer_id",foyer.id);
-let me=(existants||[]).find(m=>m.nom.trim().toLowerCase()===nom.toLowerCase());
-if(!me){
-  const {data,error:e2}=await sb.from("membres").insert({foyer_id:foyer.id,nom,couleur:COULEURS[(existants||[]).length%COULEURS.length]}).select().single();
-  if(e2) return alert("Erreur : "+e2.message);
-  me=data;
+  let me=(existants||[]).find(m=>m.nom.trim().toLowerCase()===nom.toLowerCase());
+  if(!me){
+    const {data,error:e2}=await sb.from("membres").insert({foyer_id:foyer.id,nom,couleur:COULEURS[(existants||[]).length%COULEURS.length]}).select().single();
+    if(e2) return alert("Erreur : "+e2.message);
+    me=data;
+  }
+  localStorage.setItem("foyer",JSON.stringify({foyerId:foyer.id,moiId:me.id}));
+  demarrer();
 }
 async function demarrer(){
   const ls=JSON.parse(localStorage.getItem("foyer")||"null");
@@ -320,6 +323,7 @@ function vueToday(){
   if(bientot.length) h+=`<div class="sec">Bientôt</div>`+bientot.map(c=>carteCorvee(c,false)).join("");
   if(!S.corvees.length) h+=`<div class="center s">Aucune corvée.<br><br><button class="btn" onclick="formModeles()">＋ Ajouter des corvées types</button><br><button class="btn sec2" onclick="formCorvee()">Créer ma propre corvée</button></div>`;
   return h;
+}
 function vueSemaine(){
   const jrs=joursSemaine(), t=today();
   if(!S.jourSel||!jrs.some(d=>iso(d)===S.jourSel)) S.jourSel=jrs.some(d=>iso(d)===t)?t:iso(jrs[0]);
@@ -347,7 +351,6 @@ function vueSemaine(){
     <div><div class="s" style="margin:4px 4px 8px">Pour l'autre (${autres.length})</div>${bloc(autres)||`<div class="card s">Rien de prévu</div>`}</div>
   </div>`;
 }
-}
 function vueCorvees(){
   const pieces=[...new Set(S.corvees.map(c=>c.piece||"Sans pièce"))].sort();
   return `<button class="btn sec2" style="margin:6px 0 0" onclick="formModeles()">＋ Ajouter des corvées types</button>`+(pieces.map(p=>`<div class="sec">${esc(p)}</div>`+S.corvees.filter(c=>(c.piece||"Sans pièce")===p).map(c=>carteCorvee(c,false)).join("")).join("")||`<div class="center s">Aucune corvée.</div>`);
@@ -374,7 +377,9 @@ function vueBilan(){
   `<div class="sec">Foyer</div><div class="card"><div class="s">Code à partager avec votre partenaire</div><div class="stat" style="letter-spacing:4px">${esc(S.foyer.code)}</div>
   <button class="btn sec2" onclick="if(confirm('Quitter ce foyer sur cet appareil ?')){localStorage.removeItem('foyer');location.reload()}">Se déconnecter</button></div>`;
 }
+
 const TITRES={today:["Aujourd'hui",()=>new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})],corvees:["Corvées",()=>`${S.corvees.length} tâches récurrentes`],projets:["Projets",()=>"Améliorations de la maison"],bilan:["Bilan",()=>"Équité et activité"],semaine:["Semaine",()=>"Vue d'ensemble des 7 jours"]};
+
 function render(){
   if(!S.foyer) return;
   if(S.modal) return;
@@ -385,6 +390,7 @@ function render(){
   <nav>${[["today","☀️","Aujourd'hui"],["semaine","📅","Semaine"],["corvees","🧹","Corvées"],["projets","🔨","Projets"],["bilan","📊","Bilan"]].map(([k,i,l])=>`<button class="${S.tab===k?"on":""}" onclick="S.tab='${k}';render()"><span>${i}</span>${l}</button>`).join("")}</nav>`;
   $("main").scrollTop=sc;
 }
+
 if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
 demarrer();
 </script>
