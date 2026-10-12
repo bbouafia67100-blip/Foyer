@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Foyer">
+<meta name="theme-color" content="#f6f5f1">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>Foyer</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#f6f5f1;--card:#fff;--txt:#1c1c1e;--mut:#8a8a8e;--acc:#4f46e5;--ok:#16a34a;--warn:#ea580c;--bad:#dc2626;--line:#ececea}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif}
+#app{height:100%;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top)}
+header{padding:14px 20px 6px}
+header h1{margin:0;font-size:28px;font-weight:700;letter-spacing:-.5px}
+header p{margin:2px 0 0;color:var(--mut);font-size:14px}
+main{flex:1;overflow-y:auto;padding:8px 16px 100px}
+.card{background:var(--card);border-radius:16px;padding:14px 16px;margin:10px 0;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.row{display:flex;align-items:center;gap:12px}
+.grow{flex:1;min-width:0}
+.t{font-weight:600;font-size:16px}
+.s{color:var(--mut);font-size:13px;margin-top:2px}
+.sec{font-size:13px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.6px;margin:22px 4px 4px}
+.chk{width:32px;height:32px;border-radius:50%;border:2px solid #d4d4d8;background:none;flex:none;font-size:16px;color:#fff;display:flex;align-items:center;justify-content:center}
+.chk.on{background:var(--ok);border-color:var(--ok)}
+.pill{font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;background:#eef;color:var(--acc)}
+.pill.late{background:#fee2e2;color:var(--bad)}.pill.soon{background:#ffedd5;color:var(--warn)}.pill.ok{background:#dcfce7;color:var(--ok)}
+.av{width:30px;height:30px;border-radius:50%;color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex:none}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);border-top:1px solid var(--line);padding:6px 0 calc(6px + env(safe-area-inset-bottom))}
+nav button{flex:1;background:none;border:0;padding:6px;font-size:11px;color:var(--mut);display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button span{font-size:22px}
+nav button.on{color:var(--acc)}
+.fab{position:fixed;right:18px;bottom:calc(82px + env(safe-area-inset-bottom));width:56px;height:56px;border-radius:50%;background:var(--acc);color:#fff;border:0;font-size:30px;box-shadow:0 6px 18px rgba(79,70,229,.4)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:flex-end;z-index:10}
+.sheet{background:var(--bg);width:100%;border-radius:22px 22px 0 0;padding:20px 20px calc(24px + env(safe-area-inset-bottom));max-height:88%;overflow:auto}
+.sheet h2{margin:0 0 14px;font-size:20px}
+label{display:block;font-size:13px;color:var(--mut);margin:12px 0 5px;font-weight:600}
+input,select,textarea{width:100%;padding:13px;border:1px solid var(--line);border-radius:12px;font-size:16px;background:#fff;font-family:inherit}
+.btn{width:100%;padding:15px;border:0;border-radius:14px;background:var(--acc);color:#fff;font-size:16px;font-weight:600;margin-top:18px}
+.btn.sec2{background:#e5e5ea;color:var(--txt);margin-top:8px}.btn.del{background:#fee2e2;color:var(--bad);margin-top:8px}
+.bar{height:10px;border-radius:99px;background:#e5e5ea;overflow:hidden;display:flex;margin:8px 0}
+.seg{font-size:11px}
+.center{text-align:center;padding:50px 24px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 0}
+.chip{padding:8px 14px;border-radius:99px;background:#e5e5ea;font-size:14px;white-space:nowrap;border:0}
+.chip.on{background:var(--acc);color:#fff}
+.stat{font-size:34px;font-weight:700}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const SUPABASE_URL = "https://supabase.com/dashboard/project/lsfqyzppexbdbcvdomjc";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxzZnF5enBwZXhiZGJjdmRvbWpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4MDAwNDMsImV4cCI6MjEwNzM3NjA0M30.-OeFwdutTnGOFQuDdV7ZExUV_sWMN8ql9ZuNEBON41I";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const COULEURS = ["#4f46e5","#ec4899","#0ea5e9","#f59e0b"];
+const STATUTS = {idee:"💡 Idée",afaire:"📋 À faire",encours:"🔧 En cours",fait:"✅ Fait"};
+const $ = s => document.querySelector(s);
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&","<":"<",">":">",'"':""","'":"'"}[c]));
+let S = {foyer:null,moi:null,membres:[],corvees:[],projets:[],histo:[],tab:"today",modal:null,filtre:"tous"};
+
+const today = () => new Date().toISOString().slice(0,10);
+const jours = d => Math.floor((new Date(today()) - new Date(d)) / 864e5);
+function echeance(c){
+  if(!c.derniere_fois) return -1; // jamais fait = en retard
+  return c.frequence_jours - jours(c.derniere_fois); // jours restants
+}
+const membre = id => S.membres.find(m=>m.id===id);
+function av(m){ return m?`<div class="av" style="background:${esc(m.couleur)}">${esc(m.nom[0].toUpperCase())}</div>`:`<div class="av" style="background:#ccc">?</div>`; }
+
+/* ---------- Données ---------- */
+async function charger(){
+  const f = S.foyer.id;
+  const [m,c,p,h] = await Promise.all([
+    sb.from("membres").select("*").eq("foyer_id",f),
+    sb.from("corvees").select("*").eq("foyer_id",f),
+    sb.from("projets").select("*").eq("foyer_id",f),
+    sb.from("historique").select("*").eq("foyer_id",f).order("fait_le",{ascending:false}).limit(500)
+  ]);
+  S.membres=m.data||[];S.corvees=c.data||[];S.projets=p.data||[];S.histo=h.data||[];
+  render();
+}
+function ecouter(){
+  sb.channel("foyer-"+S.foyer.id)
+    .on("postgres_changes",{event:"*",schema:"public"},()=>charger())
+    .subscribe();
+}
+
+/* ---------- Onboarding ---------- */
+function ecranAccueil(){
+  $("#app").innerHTML=`<div class="center"><div style="font-size:60px">🏡</div>
+  <h1>Foyer</h1><p class="s">Corvées et projets à deux, synchronisés.</p>
+  <div class="card" style="text-align:left"><label>Votre prénom</label><input id="nom" placeholder="Ex : Alex">
+  <label>Code du foyer (laissez vide pour en créer un)</label><input id="code" placeholder="Ex : K7M2QX" style="text-transform:uppercase">
+  <button class="btn" onclick="rejoindre()">Continuer</button></div></div>`;
+}
+async function rejoindre(){
+  const nom=$("#nom").value.trim(); let code=$("#code").value.trim().toUpperCase();
+  if(!nom) return alert("Entrez votre prénom");
+  let foyer;
+  if(code){
+    const {data}=await sb.from("foyers").select("*").eq("code",code).maybeSingle();
+    if(!data) return alert("Code introuvable");
+    foyer=data;
+  } else {
+    code=Math.random().toString(36).slice(2,8).toUpperCase();
+    const {data,error}=await sb.from("foyers").insert({code}).select().single();
+    if(error) return alert("Erreur : "+error.message);
+    foyer=data;
+  }
+  const {count}=await sb.from("membres").select("*",{count:"exact",head:true}).eq("foyer_id",foyer.id);
+  const {data:me,error:e2}=await sb.from("membres").insert({foyer_id:foyer.id,nom,couleur:COULEURS[count%COULEURS.length]}).select().single();
+  if(e2) return alert("Erreur : "+e2.message);
+  localStorage.setItem("foyer",JSON.stringify({foyerId:foyer.id,moiId:me.id}));
+  demarrer();
+}
+async function demarrer(){
+  const ls=JSON.parse(localStorage.getItem("foyer")||"null");
+  if(!ls) return ecranAccueil();
+  const {data:foyer}=await sb.from("foyers").select("*").eq("id",ls.foyerId).maybeSingle();
+  const {data:moi}=await sb.from("membres").select("*").eq("id",ls.moiId).maybeSingle();
+  if(!foyer||!moi){localStorage.removeItem("foyer");return ecranAccueil();}
+  S.foyer=foyer;S.moi=moi;
+  await charger(); ecouter();
+}
+
+/* ---------- Actions ---------- */
+async function faire(id){
+  const c=S.corvees.find(x=>x.id===id); if(!c) return;
+  let suivant=c.assigne_a;
+  if(c.rotation && S.membres.length>1){
+    const i=S.membres.findIndex(m=>m.id===c.assigne_a);
+    suivant=S.membres[(i+1)%S.membres.length].id;
+  }
+  await sb.from("historique").insert({foyer_id:S.foyer.id,corvee_id:c.id,membre_id:S.moi.id,titre:c.titre,points:c.points});
+  await sb.from("corvees").update({derniere_fois:today(),assigne_a:suivant}).eq("id",id);
+  if(navigator.vibrate) navigator.vibrate(30);
+  charger();
+}
+async function sauverCorvee(id){
+  const o={foyer_id:S.foyer.id,titre:$("#f-titre").value.trim(),piece:$("#f-piece").value.trim(),
+    frequence_jours:+$("#f-freq").value,assigne_a:$("#f-ass").value||null,rotation:$("#f-rot").checked,points:+$("#f-pts").value||1};
+  if(!o.titre) return alert("Titre requis");
+  if(id) await sb.from("corvees").update(o).eq("id",id); else await sb.from("corvees").insert(o);
+  fermer(); charger();
+}
+async function supprimer(table,id){
+  if(!confirm("Supprimer ?")) return;
+  await sb.from(table).delete().eq("id",id); fermer(); charger();
+}
+async function sauverProjet(id){
+  const o={foyer_id:S.foyer.id,titre:$("#p-titre").value.trim(),statut:$("#p-statut").value,
+    cout:+$("#p-cout").value||0,assigne_a:$("#p-ass").value||null,notes:$("#p-notes").value};
+  if(!o.titre) return alert("Titre requis");
+  if(id) await sb.from("projets").update(o).eq("id",id); else await sb.from("projets").insert(o);
+  fermer(); charger();
+}
+async function changerStatut(id,statut){ await sb.from("projets").update({statut}).eq("id",id); charger(); }
+
+/* ---------- Modales ---------- */
+const fermer=()=>{S.modal=null;$("#modal")?.remove();};
+function ouvrir(html){
+  fermer(); S.modal=1;
+  const d=document.createElement("div");d.id="modal";d.className="modal";
+  d.innerHTML=`<div class="sheet">${html}</div>`;
+  d.onclick=e=>{if(e.target===d)fermer();};
+  document.body.appendChild(d);
+}
+const optsMembres=sel=>`<option value="">— Personne —</option>`+S.membres.map(m=>`<option value="${m.id}" ${m.id===sel?"selected":""}>${esc(m.nom)}</option>`).join("");
+function formCorvee(id){
+  const c=S.corvees.find(x=>x.id===id)||{frequence_jours:7,rotation:true,points:1,assigne_a:S.moi.id};
+  ouvrir(`<h2>${id?"Modifier":"Nouvelle"} corvée</h2>
+  <label>Titre</label><input id="f-titre" value="${esc(c.titre||"")}" placeholder="Passer l'aspirateur">
+  <label>Pièce</label><input id="f-piece" value="${esc(c.piece||"")}" placeholder="Salon">
+  <label>Fréquence</label><select id="f-freq">${[[1,"Tous les jours"],[3,"Tous les 3 jours"],[7,"Chaque semaine"],[14,"Toutes les 2 semaines"],[30,"Chaque mois"],[90,"Chaque trimestre"],[180,"Tous les 6 mois"]].map(([v,l])=>`<option value="${v}" ${v==c.frequence_jours?"selected":""}>${l}</option>`).join("")}</select>
+  <label>Assignée à</label><select id="f-ass">${optsMembres(c.assigne_a)}</select>
+  <label>Effort (points)</label><select id="f-pts">${[1,2,3,5].map(v=>`<option ${v==c.points?"selected":""}>${v}</option>`).join("")}</select>
+  <label style="display:flex;gap:10px;align-items:center"><input type="checkbox" id="f-rot" ${c.rotation?"checked":""} style="width:auto"> Alterner automatiquement</label>
+  <button class="btn" onclick="sauverCorvee('${id||""}')">Enregistrer</button>
+  ${id?`<button class="btn del" onclick="supprimer('corvees','${id}')">Supprimer</button>`:""}`);
+}
+function formProjet(id){
+  const p=S.projets.find(x=>x.id===id)||{statut:"idee",cout:0,notes:""};
+  ouvrir(`<h2>${id?"Modifier":"Nouveau"} projet</h2>
+  <label>Titre</label><input id="p-titre" value="${esc(p.titre||"")}" placeholder="Peindre la chambre">
+  <label>Statut</label><select id="p-statut">${Object.entries(STATUTS).map(([k,v])=>`<option value="${k}" ${k===p.statut?"selected":""}>${v}</option>`).join("")}</select>
+  <label>Budget estimé (€)</label><input id="p-cout" type="number" inputmode="decimal" value="${p.cout||""}">
+  <label>Responsable</label><select id="p-ass">${optsMembres(p.assigne_a)}</select>
+  <label>Notes</label><textarea id="p-notes" rows="3">${esc(p.notes||"")}</textarea>
+  <button class="btn" onclick="sauverProjet('${id||""}')">Enregistrer</button>
+  ${id?`<button class="btn del" onclick="supprimer('projets','${id}')">Supprimer</button>`:""}`);
+}
+
+/* ---------- Vues ---------- */
+function carteCorvee(c,montrerBtn=true){
+  const e=echeance(c);
+  const pill=e<0?`<span class="pill late">En retard${c.derniere_fois?` de ${-e} j`:""}</span>`:e===0?`<span class="pill soon">Aujourd'hui</span>`:e<=2?`<span class="pill soon">Dans ${e} j</span>`:`<span class="pill ok">Dans ${e} j</span>`;
+  return `<div class="card row">
+    ${montrerBtn?`<button class="chk" onclick="faire('${c.id}')" aria-label="Fait"></button>`:""}
+    <div class="grow" onclick="formCorvee('${c.id}')"><div class="t">${esc(c.titre)}</div>
+    <div class="s">${esc(c.piece||"—")} · ${pill}</div></div>${av(membre(c.assigne_a))}</div>`;
+}
+function vueToday(){
+  const dues=S.corvees.filter(c=>echeance(c)<=0).sort((a,b)=>echeance(a)-echeance(b));
+  const miennes=dues.filter(c=>c.assigne_a===S.moi.id), autres=dues.filter(c=>c.assigne_a!==S.moi.id);
+  const bientot=S.corvees.filter(c=>echeance(c)>0&&echeance(c)<=3);
+  const doneAuj=S.histo.filter(h=>h.fait_le.slice(0,10)===today()).length;
+  let h=`<div class="card row"><div class="grow"><div class="s">Fait aujourd'hui</div><div class="stat">${doneAuj}</div></div><div style="font-size:42px">${doneAuj>0?"🎉":"🧹"}</div></div>`;
+  h+=`<div class="sec">À faire par moi (${miennes.length})</div>`+(miennes.map(c=>carteCorvee(c)).join("")||`<div class="card s">Rien pour vous, bravo ✨</div>`);
+  if(autres.length) h+=`<div class="sec">Pour l'autre (${autres.length})</div>`+autres.map(c=>carteCorvee(c)).join("");
+  if(bientot.length) h+=`<div class="sec">Bientôt</div>`+bientot.map(c=>carteCorvee(c,false)).join("");
+  if(!S.corvees.length) h+=`<div class="center s">Aucune corvée. Touchez + pour commencer.</div>`;
+  return h;
+}
+function vueCorvees(){
+  const pieces=[...new Set(S.corvees.map(c=>c.piece||"Sans pièce"))].sort();
+  return pieces.map(p=>`<div class="sec">${esc(p)}</div>`+S.corvees.filter(c=>(c.piece||"Sans pièce")===p).map(c=>carteCorvee(c,false)).join("")).join("")||`<div class="center s">Aucune corvée.</div>`;
+}
+function vueProjets(){
+  const f=S.filtre;
+  const chips=`<div class="chips"><button class="chip ${f==="tous"?"on":""}" onclick="S.filtre='tous';render()">Tous</button>${Object.entries(STATUTS).map(([k,v])=>`<button class="chip ${f===k?"on":""}" onclick="S.filtre='${k}';render()">${v}</button>`).join("")}</div>`;
+  const liste=S.projets.filter(p=>f==="tous"||p.statut===f);
+  const total=liste.filter(p=>p.statut!=="fait").reduce((s,p)=>s+(+p.cout||0),0);
+  return chips+`<div class="card row"><div class="grow"><div class="s">Budget restant</div><div class="stat">${total.toLocaleString("fr-FR")} €</div></div></div>`+
+    (liste.map(p=>`<div class="card"><div class="row"><div class="grow" onclick="formProjet('${p.id}')"><div class="t">${esc(p.titre)}</div>
+    <div class="s">${STATUTS[p.statut]}${p.cout?` · ${(+p.cout).toLocaleString("fr-FR")} €`:""}</div></div>${av(membre(p.assigne_a))}</div>
+    ${p.statut!=="fait"?`<button class="chip" style="margin-top:10px" onclick="changerStatut('${p.id}','${{idee:"afaire",afaire:"encours",encours:"fait"}[p.statut]}')">Passer à l'étape suivante →</button>`:""}</div>`).join("")||`<div class="center s">Aucun projet.</div>`);
+}
+function vueBilan(){
+  const debut=new Date();debut.setDate(debut.getDate()-7);
+  const sem=S.histo.filter(h=>new Date(h.fait_le)>=debut);
+  const pts=S.membres.map(m=>({m,p:sem.filter(h=>h.membre_id===m.id).reduce((s,h)=>s+h.points,0)}));
+  const tot=pts.reduce((s,x)=>s+x.p,0)||1;
+  return `<div class="sec">7 derniers jours</div><div class="card"><div class="bar">${pts.map(x=>`<div style="width:${x.p/tot*100}%;background:${esc(x.m.couleur)}"></div>`).join("")}</div>
+  ${pts.map(x=>`<div class="row" style="margin-top:10px">${av(x.m)}<div class="grow t">${esc(x.m.nom)}</div><div class="t">${x.p} pts · ${Math.round(x.p/tot*100)} %</div></div>`).join("")}</div>
+  <div class="sec">Activité récente</div>`+
+  (S.histo.slice(0,15).map(h=>`<div class="card row">${av(membre(h.membre_id))}<div class="grow"><div class="t">${esc(h.titre)}</div><div class="s">${new Date(h.fait_le).toLocaleString("fr-FR",{weekday:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})}</div></div><span class="pill">+${h.points}</span></div>`).join("")||`<div class="card s">Pas encore d'activité.</div>`)+
+  `<div class="sec">Foyer</div><div class="card"><div class="s">Code à partager avec votre partenaire</div><div class="stat" style="letter-spacing:4px">${esc(S.foyer.code)}</div>
+  <button class="btn sec2" onclick="if(confirm('Quitter ce foyer sur cet appareil ?')){localStorage.removeItem('foyer');location.reload()}">Se déconnecter</button></div>`;
+}
+const TITRES={today:["Aujourd'hui",()=>new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})],corvees:["Corvées",()=>`${S.corvees.length} tâches récurrentes`],projets:["Projets",()=>"Améliorations de la maison"],bilan:["Bilan",()=>"Équité et activité"]};
+function render(){
+  if(!S.foyer) return;
+  if(S.modal) return;
+  const [t,sub]=TITRES[S.tab], vues={today:vueToday,corvees:vueCorvees,projets:vueProjets,bilan:vueBilan};
+  const sc=$("main")?.scrollTop||0;
+  $("#app").innerHTML=`<header><h1>${t}</h1><p>${sub()}</p></header><main>${vues[S.tab]()}</main>
+  ${["corvees","projets","today"].includes(S.tab)?`<button class="fab" onclick="${S.tab==="projets"?"formProjet()":"formCorvee()"}">+</button>`:""}
+  <nav>${[["today","☀️","Aujourd'hui"],["corvees","🧹","Corvées"],["projets","🔨","Projets"],["bilan","📊","Bilan"]].map(([k,i,l])=>`<button class="${S.tab===k?"on":""}" onclick="S.tab='${k}';render()"><span>${i}</span>${l}</button>`).join("")}</nav>`;
+  $("main").scrollTop=sc;
+}
+if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+demarrer();
+</script>
+</body>
+</html>
