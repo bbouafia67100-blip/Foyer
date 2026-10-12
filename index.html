@@ -613,10 +613,11 @@ async function changerStatut(id, statut){
 }
 
 /* ---------- Modales ---------- */
-const fermer = () => {
+function fermer(){
   S.modal = null;
-  $("#modal")?.remove();
-};
+  const modal = document.getElementById("modal");
+  if(modal) modal.remove();
+}
 
 function ouvrir(html){
   fermer();
@@ -624,40 +625,50 @@ function ouvrir(html){
   const d = document.createElement("div");
   d.id = "modal";
   d.className = "modal";
-  d.innerHTML = `<div class="sheet">${html}</div>`;
-  d.onclick = e => {
+  d.innerHTML = '<div class="sheet">' + html + '</div>';
+  d.onclick = function(e) {
     if(e.target === d) fermer();
   };
   document.body.appendChild(d);
 }
 
-const optsMembres = sel => `<option value="">— Personne —</option>` + S.membres.map(m => `<option value="${m.id}" ${m.id === sel ? "selected" : ""}>${esc(m.nom)}</option>`).join("");
+const optsMembres = function(sel) {
+  return '<option value="">— Personne —</option>' + 
+    S.membres.map(function(m) {
+      return '<option value="' + m.id + '" ' + (m.id === sel ? 'selected' : '') + '>' + esc(m.nom) + '</option>';
+    }).join("");
+};
 
 function formCorvee(id){
-  const c = S.corvees.find(x => x.id === id) || {frequence_jours:7, rotation:true, points:1, assigne_a: S.moi.id};
+  const c = S.corvees.find(function(x) { return x.id === id; }) || {frequence_jours:7, rotation:true, points:1, assigne_a: S.moi.id};
   
-  ouvrir(`<h2>${id ? "Modifier" : "Nouvelle"} corvée</h2>
-  <label>Titre</label><input id="f-titre" value="${esc(c.titre||"")}" placeholder="Passer l'aspirateur">
-  <label>Pièce</label><input id="f-piece" value="${esc(c.piece||"")}" placeholder="Salon">
-  <label>Fréquence (jours)</label><input id="f-freq" type="number" value="${c.frequence_jours||7}" min="1">
-  <label>Responsable</label><select id="f-ass">${optsMembres(c.assigne_a)}</select>
-  <label>Points</label><input id="f-pts" type="number" value="${c.points||1}" min="1">
-  <label style="display:flex;gap:10px;align-items:center"><input type="checkbox" id="f-rot" ${c.rotation ? "checked" : ""} style="width:auto"> Alterner automatiquement</label>
-  <button class="btn" onclick="sauverCorvee('${id||""}')">Enregistrer</button>
-  ${id ? `<button class="btn del" onclick="supprimer('corvees','${id}')">Supprimer</button>` : ""}`);
+  ouvrir('<h2>' + (id ? "Modifier" : "Nouvelle") + ' corvée</h2>' +
+    '<label>Titre</label><input id="f-titre" value="' + esc(c.titre||"") + '" placeholder="Passer l\'aspirateur">' +
+    '<label>Pièce</label><input id="f-piece" value="' + esc(c.piece||"") + '" placeholder="Salon">' +
+    '<label>Fréquence (jours)</label><input id="f-freq" type="number" value="' + (c.frequence_jours||7) + '" min="1">' +
+    '<label>Responsable</label><select id="f-ass">' + optsMembres(c.assigne_a) + '</select>' +
+    '<label>Points</label><input id="f-pts" type="number" value="' + (c.points||1) + '" min="1">' +
+    '<label style="display:flex;gap:10px;align-items:center"><input type="checkbox" id="f-rot" ' + (c.rotation ? "checked" : "") + ' style="width:auto"> Alterner automatiquement</label>' +
+    '<button class="btn" onclick="sauverCorvee(\'' + (id||"") + '\')">Enregistrer</button>' +
+    (id ? '<button class="btn del" onclick="supprimer(\'corvees\',\'' + id + '\')">Supprimer</button>' : ''));
 }
 
 function formProjet(id){
-  const p = S.projets.find(x => x.id === id) || {statut:"idee", cout:0, notes:""};
+  const p = S.projets.find(function(x) { return x.id === id; }) || {statut:"idee", cout:0, notes:""};
   
-  ouvrir(`<h2>${id ? "Modifier" : "Nouveau"} projet</h2>
-  <label>Titre</label><input id="p-titre" value="${esc(p.titre||"")}" placeholder="Peindre la chambre">
-  <label>Statut</label><select id="p-statut">${Object.entries(STATUTS).map(([k,v]) => `<option value="${k}" ${k === p.statut ? "selected" : ""}>${v}</option>`).join("")}</select>
-  <label>Budget estimé (€)</label><input id="p-cout" type="number" inputmode="decimal" value="${p.cout||""}">
-  <label>Responsable</label><select id="p-ass">${optsMembres(p.assigne_a)}</select>
-  <label>Notes</label><textarea id="p-notes" rows="3">${esc(p.notes||"")}</textarea>
-  <button class="btn" onclick="sauverProjet('${id||""}')">Enregistrer</button>
-  ${id ? `<button class="btn del" onclick="supprimer('projets','${id}')">Supprimer</button>` : ""}`);
+  let statuts = '';
+  for(let k in STATUTS) {
+    statuts += '<option value="' + k + '" ' + (k === p.statut ? 'selected' : '') + '>' + STATUTS[k] + '</option>';
+  }
+  
+  ouvrir('<h2>' + (id ? "Modifier" : "Nouveau") + ' projet</h2>' +
+    '<label>Titre</label><input id="p-titre" value="' + esc(p.titre||"") + '" placeholder="Peindre la chambre">' +
+    '<label>Statut</label><select id="p-statut">' + statuts + '</select>' +
+    '<label>Budget estimé (€)</label><input id="p-cout" type="number" inputmode="decimal" value="' + (p.cout||"") + '">' +
+    '<label>Responsable</label><select id="p-ass">' + optsMembres(p.assigne_a) + '</select>' +
+    '<label>Notes</label><textarea id="p-notes" rows="3">' + esc(p.notes||"") + '</textarea>' +
+    '<button class="btn" onclick="sauverProjet(\'' + (id||"") + '\')">Enregistrer</button>' +
+    (id ? '<button class="btn del" onclick="supprimer(\'projets\',\'' + id + '\')">Supprimer</button>' : ''));
 }
 
 /* ---------- Vues ---------- */
