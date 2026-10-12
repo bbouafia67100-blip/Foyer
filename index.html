@@ -65,6 +65,68 @@ input,select,textarea{width:100%;padding:13px;border:1px solid var(--line);borde
 .jour.on .jb i{background:#fff;color:var(--acc,#4f46e5)}
 .semcols{display:grid;grid-template-columns:1fr;gap:4px}
 @media(min-width:720px){.semcols{grid-template-columns:1fr 1fr;gap:16px}.bande{gap:10px}}
+/* Animations */
+@keyframes bounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(0.95); }
+}
+
+@keyframes slideIn {
+  from { 
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to { 
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to { 
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@keyframes fadeIn {
+  from { 
+    opacity: 0;
+  }
+  to { 
+    opacity: 1;
+  }
+}
+
+/* Transitions sur les éléments */
+.card {
+  transition: all 0.2s ease;
+}
+
+.card:active {
+  animation: bounce 0.3s ease;
+}
+
+.modal {
+  animation: fadeIn 0.3s ease;
+}
+
+.sheet {
+  animation: slideIn 0.3s ease;
+}
+
+/* Pour le nav qui change */
+nav button {
+  transition: all 0.3s ease;
+}
+
+nav button.on {
+  animation: fadeIn 0.3s ease;
+}
 </style>
 </head>
 <body>
@@ -315,14 +377,30 @@ async function demarrer(){
 let dernierUndo = null;
 async function faire(id){
   const c=S.corvees.find(x=>x.id===id); if(!c) return;
-  let suivant=c.assigne_a;
-  if(c.rotation && S.membres.length>1){
-    const i=S.membres.findIndex(m=>m.id===c.assigne_a);
-    suivant=S.membres[(i+1)%S.membres.length].id;
+  const btn = event?.target;
+  if(btn) {
+    btn.style.animation = "bounce 0.4s ease";
+    setTimeout(() => btn.style.animation = "", 400);
   }
-  const {data:h}=await sb.from("historique").insert({foyer_id:S.foyer.id,corvee_id:c.id,membre_id:S.moi.id,titre:c.titre,points:c.points}).select().single();
-  await sb.from("corvees").update({derniere_fois:today(),assigne_a:suivant}).eq("id",id);
-  dernierUndo={corveeId:id,histoId:h?.id,ancienneDate:c.derniere_fois||null,ancienAssigne:c.assigne_a};
+  
+  let suivant = c.assigne_a;
+  if(c.rotation && S.membres.length > 1){
+    const i = S.membres.findIndex(m => m.id === c.assigne_a);
+    suivant = S.membres[(i + 1) % S.membres.length].id;
+  }
+  
+  const {data:h} = await sb.from("historique").insert({
+    foyer_id:S.foyer.id,
+    corvee_id:c.id,
+    membre_id:S.moi.id,
+    titre:c.titre,
+    points:c.points
+  }).select().single();
+  
+  await sb.from("corvees").update({assigne_a:suivant}).eq("id",id);
+  
+  dernierUndo = {corveeId:id, histoId:h?.id, ancienAssigne:c.assigne_a};
+  
   if(navigator.vibrate) navigator.vibrate(30);
   await charger();
   afficherUndo(c.titre);
