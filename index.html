@@ -63,7 +63,7 @@ const COULEURS = ["#4f46e5","#ec4899","#0ea5e9","#f59e0b"];
 const STATUTS = {idee:"💡 Idée",afaire:"📋 À faire",encours:"🔧 En cours",fait:"✅ Fait"};
 const $ = s => document.querySelector(s);
 const esc = s => String(s??"").split("&").join("\u0026amp;").split("<").join("\u0026lt;").split(">").join("\u0026gt;").split('"').join("\u0026quot;").split("'").join("\u0026#39;");
-let S = {foyer:null,moi:null,membres:[],corvees:[],projets:[],histo:[],tab:"today",modal:null,filtre:"tous"};
+let S = {foyer:null,moi:null,membres:[],corvees:[],projets:[],histo:[],tab:"today",modal:null,filtre:"tous",semDec:0,jourSel:null};
 
 const today = () => {
   const d = new Date();
@@ -73,6 +73,37 @@ const jours = d => Math.floor((new Date(today()) - new Date(d)) / 864e5);
 function echeance(c){
   if(!c.derniere_fois) return -1; // jamais fait = en retard
   return c.frequence_jours - jours(c.derniere_fois); // jours restants
+}
+/* ---------- Semaine ---------- */
+const JOURS_COURTS=["L","M","M","J","V","S","D"];
+function iso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+function lundiDe(d){const x=new Date(d);x.setHours(12,0,0,0);const j=(x.getDay()+6)%7;x.setDate(x.getDate()-j);return x;}
+function joursSemaine(){
+  const l=lundiDe(new Date());l.setDate(l.getDate()+S.semDec*7);
+  return Array.from({length:7},(_,i)=>{const d=new Date(l);d.setDate(l.getDate()+i);return d;});
+}
+// Dates (ISO) où une corvée est due, entre deux bornes
+function occurrences(c,debutISO,finISO){
+  const res=[];
+  const t=today();
+  if(!c.derniere_fois){ // jamais faite : due maintenant
+    if(t>=debutISO&&t<=finISO) res.push(t);
+    return res;
+  }
+  const base=new Date(c.derniere_fois+"T12:00:00");
+  let d=new Date(base);d.setDate(d.getDate()+c.frequence_jours);
+  let garde=0;
+  while(iso(d)<=finISO&&garde++<400){
+    const s=iso(d);
+    if(s<t){ // en retard : affichée aujourd'hui
+      if(t>=debutISO&&t<=finISO&&!res.includes(t)) res.push(t);
+    } else if(s>=debutISO) res.push(s);
+    d.setDate(d.getDate()+c.frequence_jours);
+  }
+  return res;
+}
+function corveesDuJour(s){
+  return S.corvees.filter(c=>occurrences(c,s,s).includes(s));
 }
 const membre = id => S.membres.find(m=>m.id===id);
 function av(m){ return m?`<div class="av" style="background:${esc(m.couleur)}">${esc(m.nom[0].toUpperCase())}</div>`:`<div class="av" style="background:#ccc">?</div>`; }
@@ -276,6 +307,33 @@ function vueToday(){
   if(bientot.length) h+=`<div class="sec">Bientôt</div>`+bientot.map(c=>carteCorvee(c,false)).join("");
   if(!S.corvees.length) h+=`<div class="center s">Aucune corvée.<br><br><button class="btn" onclick="formModeles()">＋ Ajouter des corvées types</button><br><button class="btn sec2" onclick="formCorvee()">Créer ma propre corvée</button></div>`;
   return h;
+function vueSemaine(){
+  const jrs=joursSemaine(), t=today();
+  if(!S.jourSel||!jrs.some(d=>iso(d)===S.jourSel)) S.jourSel=jrs.some(d=>iso(d)===t)?t:iso(jrs[0]);
+  const fmt=d=>d.toLocaleDateString("fr-FR",{day:"numeric",month:"short"});
+  const bande=jrs.map((d,i)=>{
+    const s=iso(d), n=corveesDuJour(s).length;
+    return `<button class="jour ${s===S.jourSel?"on":""} ${s===t?"auj":""}" onclick="S.jourSel='${s}';render()">
+      <span class="jl">${JOURS_COURTS[i]}</span><span class="jn">${d.getDate()}</span>
+      <span class="jb">${n?`<i>${n}</i>`:""}</span></button>`;
+  }).join("");
+  const liste=corveesDuJour(S.jourSel);
+  const mes=liste.filter(c=>c.assigne_a===S.moi.id), autres=liste.filter(c=>c.assigne_a!==S.moi.id);
+  const dSel=new Date(S.jourSel+"T12:00:00");
+  const estAuj=S.jourSel===t;
+  const bloc=(arr)=>arr.map(c=>carteCorvee(c,estAuj)).join("");
+  return `<div class="semnav">
+    <button class="chip" onclick="S.semDec--;S.jourSel=null;render()">‹</button>
+    <div class="grow" style="text-align:center"><div class="t">${fmt(jrs[0])} – ${fmt(jrs[6])}</div>
+    ${S.semDec!==0?`<a class="s" style="color:var(--acc);cursor:pointer" onclick="S.semDec=0;S.jourSel=null;render()">Revenir à aujourd'hui</a>`:`<div class="s">Cette semaine</div>`}</div>
+    <button class="chip" onclick="S.semDec++;S.jourSel=null;render()">›</button></div>
+  <div class="bande">${bande}</div>
+  <div class="sec">${dSel.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})}</div>
+  <div class="semcols">
+    <div><div class="s" style="margin:4px 4px 8px">Pour moi (${mes.length})</div>${bloc(mes)||`<div class="card s">Rien de prévu ✨</div>`}</div>
+    <div><div class="s" style="margin:4px 4px 8px">Pour l'autre (${autres.length})</div>${bloc(autres)||`<div class="card s">Rien de prévu</div>`}</div>
+  </div>`;
+}
 }
 function vueCorvees(){
   const pieces=[...new Set(S.corvees.map(c=>c.piece||"Sans pièce"))].sort();
@@ -303,15 +361,15 @@ function vueBilan(){
   `<div class="sec">Foyer</div><div class="card"><div class="s">Code à partager avec votre partenaire</div><div class="stat" style="letter-spacing:4px">${esc(S.foyer.code)}</div>
   <button class="btn sec2" onclick="if(confirm('Quitter ce foyer sur cet appareil ?')){localStorage.removeItem('foyer');location.reload()}">Se déconnecter</button></div>`;
 }
-const TITRES={today:["Aujourd'hui",()=>new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})],corvees:["Corvées",()=>`${S.corvees.length} tâches récurrentes`],projets:["Projets",()=>"Améliorations de la maison"],bilan:["Bilan",()=>"Équité et activité"]};
+const TITRES={today:["Aujourd'hui",()=>new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})],corvees:["Corvées",()=>`${S.corvees.length} tâches récurrentes`],projets:["Projets",()=>"Améliorations de la maison"],bilan:["Bilan",()=>"Équité et activité"],semaine:["Semaine",()=>"Vue d'ensemble des 7 jours"]};
 function render(){
   if(!S.foyer) return;
   if(S.modal) return;
-  const [t,sub]=TITRES[S.tab], vues={today:vueToday,corvees:vueCorvees,projets:vueProjets,bilan:vueBilan};
+  const [t,sub]=TITRES[S.tab], vues={today:vueToday,semaine:vueSemaine,corvees:vueCorvees,projets:vueProjets,bilan:vueBilan};
   const sc=$("main")?.scrollTop||0;
   $("#app").innerHTML=`<header><h1>${t}</h1><p>${sub()}</p></header><main>${vues[S.tab]()}</main>
-  ${["corvees","projets","today"].includes(S.tab)?`<button class="fab" onclick="${S.tab==="projets"?"formProjet()":"formCorvee()"}">+</button>`:""}
-  <nav>${[["today","☀️","Aujourd'hui"],["corvees","🧹","Corvées"],["projets","🔨","Projets"],["bilan","📊","Bilan"]].map(([k,i,l])=>`<button class="${S.tab===k?"on":""}" onclick="S.tab='${k}';render()"><span>${i}</span>${l}</button>`).join("")}</nav>`;
+  ${["corvees","projets","today","semaine"].includes(S.tab)?`<button class="fab" onclick="${S.tab==="projets"?"formProjet()":"formCorvee()"}">+</button>`:""}
+  <nav>${[["today","☀️","Aujourd'hui"],["semaine","📅","Semaine"],["corvees","🧹","Corvées"],["projets","🔨","Projets"],["bilan","📊","Bilan"]].map(([k,i,l])=>`<button class="${S.tab===k?"on":""}" onclick="S.tab='${k}';render()"><span>${i}</span>${l}</button>`).join("")}</nav>`;
   $("main").scrollTop=sc;
 }
 if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
