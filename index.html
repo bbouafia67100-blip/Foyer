@@ -120,11 +120,12 @@ async function rejoindre(){
     if(error) return alert("Erreur : "+error.message);
     foyer=data;
   }
-  const {count}=await sb.from("membres").select("*",{count:"exact",head:true}).eq("foyer_id",foyer.id);
-  const {data:me,error:e2}=await sb.from("membres").insert({foyer_id:foyer.id,nom,couleur:COULEURS[count%COULEURS.length]}).select().single();
+  const {data:existants}=await sb.from("membres").select("*").eq("foyer_id",foyer.id);
+let me=(existants||[]).find(m=>m.nom.trim().toLowerCase()===nom.toLowerCase());
+if(!me){
+  const {data,error:e2}=await sb.from("membres").insert({foyer_id:foyer.id,nom,couleur:COULEURS[(existants||[]).length%COULEURS.length]}).select().single();
   if(e2) return alert("Erreur : "+e2.message);
-  localStorage.setItem("foyer",JSON.stringify({foyerId:foyer.id,moiId:me.id}));
-  demarrer();
+  me=data;
 }
 async function demarrer(){
   const ls=JSON.parse(localStorage.getItem("foyer")||"null");
