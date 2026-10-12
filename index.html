@@ -121,41 +121,41 @@ let dernierUndo = null;
 
 const today = () => {
   const d = new Date();
-  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
 };
 
-const jours = d => Math.floor((new Date(today()) - new Date(d)) / 864e5);
+const jours = function(d) {
+  return Math.floor((new Date(today() + "T00:00:00") - new Date(d + "T00:00:00")) / 864e5);
+};
 
 function echeance(c){
-  if(!c.derniere_fois) return -1;
-  return c.frequence_jours - jours(c.derniere_fois);
+  if(!c.derniere_fois) return -1; // jamais fait = en retard
+  return c.frequence_jours - jours(c.derniere_fois); // jours restants
 }
 
-/* ---------- Semaine ---------- */
-const JOURS_COURTS = ["L","M","M","J","V","S","D"];
-
 function iso(d){
-  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
 }
 
 function lundiDe(d){
   const x = new Date(d);
-  x.setHours(12,0,0,0);
-  const j = (x.getDay()+6)%7;
-  x.setDate(x.getDate()-j);
+  x.setHours(12, 0, 0, 0);
+  const j = (x.getDay() + 6) % 7;
+  x.setDate(x.getDate() - j);
   return x;
 }
 
 function joursSemaine(){
   const l = lundiDe(new Date());
-  l.setDate(l.getDate()+S.semDec*7);
-  return Array.from({length:7},(_,i)=>{
+  l.setDate(l.getDate() + S.semDec * 7);
+  return Array.from({length: 7}, function(_, i){
     const d = new Date(l);
-    d.setDate(l.getDate()+i);
+    d.setDate(l.getDate() + i);
     return d;
   });
 }
 
+// CORRECTION : Fonction occurrences
 function occurrences(c, debutISO, finISO){
   const res = [];
   const t = today();
@@ -166,264 +166,77 @@ function occurrences(c, debutISO, finISO){
     return res;
   }
   
-  // CORRECTION : Pas de return prématuré !
-  const base = new Date(c.derniere_fois + "T12:00:00");
-  let d = new Date(base);
-  d.setDate(d.getDate() + c.frequence_jours);
+  // Calculer toutes les occurrences à partir de derniere_fois
+  const dateBase = new Date(c.derniere_fois + "T00:00:00");
+  let dateActuelle = new Date(dateBase);
+  
+  // Ajouter la fréquence pour la première prochaine occurrence
+  dateActuelle.setDate(dateActuelle.getDate() + c.frequence_jours);
   
   let garde = 0;
-  while(iso(d) <= finISO && garde++ < 400){
-    const s = iso(d);
-    if(s < t){ 
-      // En retard : affichée aujourd'hui
-      if(t >= debutISO && t <= finISO && !res.includes(t)) res.push(t);
-    } else if(s >= debutISO) {
-      res.push(s);
+  while(iso(dateActuelle) <= finISO && garde++ < 400){
+    const dateStr = iso(dateActuelle);
+    
+    // Si c'est dans le passé et pas encore fait (en retard)
+    if(dateStr < t){ 
+      if(t >= debutISO && t <= finISO && !res.includes(t)) {
+        res.push(t);
+      }
+    } 
+    // Si c'est dans la plage demandée
+    else if(dateStr >= debutISO) {
+      res.push(dateStr);
     }
-    d.setDate(d.getDate() + c.frequence_jours);
+    
+    dateActuelle.setDate(dateActuelle.getDate() + c.frequence_jours);
   }
   
   return res;
 }
 
 function corveesDuJour(s){
-  return S.corvees.filter(c => occurrences(c, s, s).includes(s));
-}
-
-const membre = id => S.membres.find(m => m.id === id);
-
-function av(m){ 
-  return m ? `<div class="av" style="background:${esc(m.couleur)}">${esc(m.nom[0].toUpperCase())}</div>` : `<div class="av" style="background:#ccc">?</div>`;
-}
-
-/* ---------- Données ---------- */
-async function charger(){
-  if(!S.foyer) return;
-  
-  try {
-    const f = S.foyer.id;
-    const [m,c,p,h] = await Promise.all([
-      sb.from("membres").select("*").eq("foyer_id",f),
-      sb.from("corvees").select("*").eq("foyer_id",f),
-      sb.from("projets").select("*").eq("foyer_id",f),
-      sb.from("historique").select("*").eq("foyer_id",f).order("fait_le",{ascending:false}).limit(500)
-    ]);
-    
-    S.membres = m.data || [];
-    S.corvees = c.data || [];
-    S.projets = p.data || [];
-    S.histo = h.data || [];
-    
-    render();
-  } catch(err) {
-    console.error("❌ Erreur charger():", err);
-  }
-}
-
-function ecouter(){
-  const f = "foyer_id=eq."+S.foyer.id;
-  const ch = sb.channel("foyer-"+S.foyer.id);
-  ["corvees","projets","historique","membres"].forEach(t => {
-    ch.on("postgres_changes",{event:"*",schema:"public",table:t,filter:f},() => charger());
+  return S.corvees.filter(function(c){
+    return occurrences(c, s, s).includes(s);
   });
-  ch.subscribe();
 }
 
-/* ---------- Onboarding ---------- */
-function ecranAccueil(){
-  const params = new URLSearchParams(window.location.search);
-  const hasInvite = params.has("invite");
-  
-  const html = `<div class="center" style="padding-top:40px">
-    <img src="icon-180.png" alt="Foyer" style="width:80px;height:80px;margin-bottom:8px;border-radius:22px">
-    <h1>Foyer</h1>
-    <p class="s">Corvées et projets à deux, synchronisés.</p>
-    <div class="card" style="text-align:left;margin-top:32px">
-      <label>Votre prénom</label>
-      <input id="nom" placeholder="Ex : Alex" autocomplete="off">
-      
-      <label style="margin-top:16px">${hasInvite ? "Invitation" : "Code du foyer"}</label>
-      <input id="code" placeholder="Ex : K7M2QX" style="text-transform:uppercase" autocomplete="off">
-      <div id="codeInfo"></div>
-      
-      <p class="s" style="margin-top:12px">
-        ${hasInvite 
-          ? "Vous avez une invitation ! Entrez votre prénom et acceptez." 
-          : "Créez un nouveau foyer ou entrez le code de votre partenaire"}
-      </p>
-      
-      <button class="btn" onclick="rejoindre()" style="margin-top:20px">Continuer</button>
-    </div>
-  </div>`;
-  
-  $("#app").innerHTML = html;
-  verifierInvitation();
-}
-
-function verifierInvitation(){
-  const params = new URLSearchParams(window.location.search);
-  if(params.has("invite")){
-    const token = params.get("invite");
-    $("#code").value = token;
-    $("#code").readOnly = true;
-    $("#codeInfo").innerHTML = `<p class="s" style="color:var(--ok);margin-top:8px">✅ Invitation détectée</p>`;
-  }
-}
-
-async function rejoindre(){
-  const nom = $("#nom").value.trim();
-  const codeOuToken = $("#code").value.trim().toUpperCase();
-  
-  if(!nom) return alert("Entrez votre prénom");
-  if(!codeOuToken) return alert("Entrez un code ou acceptez une invitation");
-  
-  let foyer;
-  
-  try {
-    // Vérifier si c'est une invitation (token long) ou un code classique
-    if(codeOuToken.length >= 8){
-      // C'est un token d'invitation
-      const {data: inv} = await sb.from("invitations")
-        .select("foyers(*)")
-        .eq("token", codeOuToken)
-        .gt("expires_at", new Date().toISOString())
-        .eq("used", false)
-        .maybeSingle();
-      
-      if(!inv) return alert("Invitation invalide, expirée ou déjà utilisée");
-      foyer = inv.foyers;
-    } else {
-      // Code de foyer classique (6 caractères)
-      const {data} = await sb.from("foyers").select("*").eq("code", codeOuToken).maybeSingle();
-      if(!data) return alert("Code introuvable");
-      foyer = data;
-    }
-    
-    // Vérifier si ce prénom existe déjà
-    const {data:existants} = await sb.from("membres").select("*").eq("foyer_id", foyer.id);
-    let me = (existants||[]).find(m => m.nom.trim().toLowerCase() === nom.toLowerCase());
-    
-    if(!me){
-      const {data, error:e2} = await sb.from("membres").insert({
-        foyer_id: foyer.id,
-        nom,
-        couleur: COULEURS[(existants||[]).length % COULEURS.length]
-      }).select().single();
-      
-      if(e2) return alert("Erreur : "+e2.message);
-      me = data;
-    }
-    
-    localStorage.setItem("foyer", JSON.stringify({foyerId: foyer.id, moiId: me.id}));
-    demarrer();
-  } catch(err) {
-    console.error("Erreur rejoindre():", err);
-    alert("Erreur : " + (err.message || err));
-  }
-}
-
-/* Générer une invitation */
-async function genererInvitation(){
-  const token = Math.random().toString(36).slice(2, 8).toUpperCase() + Math.random().toString(36).slice(2, 8).toUpperCase();
-  const expires = new Date();
-  expires.setDate(expires.getDate() + 1); // 24h
-  
-  try {
-    const {error} = await sb.from("invitations").insert({
-      foyer_id: S.foyer.id,
-      token,
-      created_by: S.moi.id,
-      expires_at: expires.toISOString()
-    });
-    
-    if(error) return alert("Erreur : "+error.message);
-    
-    const lien = `${window.location.origin}${window.location.pathname}?invite=${token}`;
-    afficherPartageInvitation(lien);
-  } catch(err) {
-    console.error("Erreur genererInvitation():", err);
-  }
-}
-
-function afficherPartageInvitation(lien){
-  ouvrir(`<div style="text-align:center;padding:20px 0">
-    <img src="icon-180.png" alt="Foyer" style="width:60px;height:60px;margin-bottom:12px;border-radius:18px">
-    <h2>Inviter un membre</h2>
-    <p class="s">Partagez ce lien à votre partenaire</p>
-  </div>
-  <div class="card" style="background:#f3f4f6;word-break:break-all;font-family:monospace;font-size:12px;padding:12px">${esc(lien)}</div>
-  <button class="btn" onclick="
-    navigator.clipboard.writeText('${esc(lien)}');
-    const btn = event.target;
-    btn.textContent = '✅ Copié !';
-    setTimeout(() => btn.textContent = '📋 Copier le lien', 2000);
-  ">📋 Copier le lien</button>
-  ${navigator.share ? `<button class="btn sec2" onclick="navigator.share({title:'Foyer 🍃',text:'Rejoignez mon foyer Foyer',url:'${esc(lien)}'}).catch(()=>{})">📤 Partager</button>` : ""}
-  <p class="s" style="margin-top:20px;color:var(--mut)">Valide pendant 24 heures</p>`);
-}
-
-async function demarrer(){
-  const ls = JSON.parse(localStorage.getItem("foyer")||"null");
-  if(!ls) return ecranAccueil();
-  
-  try {
-    const {data:foyer} = await sb.from("foyers").select("*").eq("id",ls.foyerId).maybeSingle();
-    const {data:moi} = await sb.from("membres").select("*").eq("id",ls.moiId).maybeSingle();
-    
-    if(!foyer || !moi){
-      localStorage.removeItem("foyer");
-      return ecranAccueil();
-    }
-    
-    S.foyer = foyer;
-    S.moi = moi;
-    await charger();
-    ecouter();
-  } catch(err) {
-    console.error("Erreur demarrer():", err);
-    ecranAccueil();
-  }
-}
-
-/* ---------- Actions ---------- */
+// CORRECTION : Fonction faire
 async function faire(id){
-  console.log("👉 Tentative de marquer comme faite :", id);
+  console.log("👉 Marquer comme faite :", id);
   
   const c = S.corvees.find(function(x) { return x.id === id; });
   if(!c) {
-    console.error("❌ Corvée introuvable :", id);
+    console.error("❌ Corvée introuvable");
     return;
   }
-  
-  console.log("✅ Corvée trouvée :", c.titre);
   
   let suivant = c.assigne_a;
   if(c.rotation && S.membres.length > 1){
     const i = S.membres.findIndex(function(m) { return m.id === c.assigne_a; });
     suivant = S.membres[(i + 1) % S.membres.length].id;
-    console.log("🔄 Rotation : assigné à", suivant);
   }
   
   try {
     // 1. Ajouter à l'historique
-    const result = await sb.from("historique").insert({
+    const histoResult = await sb.from("historique").insert({
       foyer_id: S.foyer.id,
       corvee_id: c.id,
       membre_id: S.moi.id,
       titre: c.titre,
-      points: c.points
+      points: c.points,
+      fait_le: today()
     }).select().single();
     
-    const h = result.data;
-    console.log("📝 Historique enregistré :", h ? h.id : "?");
+    const h = histoResult.data;
     
-    // 2. IMPORTANT : Mettre à jour derniere_fois ET assigne_a
-    const updateResult = await sb.from("corvees").update({
-      derniere_fois: today(),  // ← C'ÉTAIT MANQUANT !
+    // 2. Mettre à jour la corvée
+    const dateAuj = today();
+    console.log("💾 Mise à jour derniere_fois à :", dateAuj);
+    
+    await sb.from("corvees").update({
+      derniere_fois: dateAuj,
       assigne_a: suivant
     }).eq("id", id);
-    
-    console.log("💾 Corvée mise à jour avec derniere_fois =", today());
     
     // 3. Sauvegarder pour l'undo
     dernierUndo = {
@@ -433,68 +246,61 @@ async function faire(id){
       ancienAssigne: c.assigne_a
     };
     
-    // 4. Feedback
+    // 4. Feedback haptique
     if(navigator.vibrate) navigator.vibrate(30);
     
-    // 5. Recharger
+    // 5. Recharger les données
+    console.log("🔄 Rechargement des données...");
     await charger();
     
-    // 6. Afficher l'undo
+    // 6. Afficher notification d'undo
     afficherUndo(c.titre);
-    
-    console.log("✨ Succès complet !");
     
   } catch(err) {
     console.error("❌ Erreur :", err);
-    alert("Erreur : " + (err.message || err));
+    alert("Erreur en sauvegardant : " + err.message);
   }
 }
 
-let undoTimer = null;
-
-function afficherUndo(titre){
-  clearTimeout(undoTimer);
-  document.getElementById("undo")?.remove();
+// CORRECTION : Fonction ajouterModeles (ne pas ajouter derniere_fois)
+async function ajouterModeles(){
+  const lignes = [...document.querySelectorAll(".mod:checked")].map(function(x){
+    const m = MODELES[+x.value];
+    return {
+      foyer_id: S.foyer.id,
+      titre: m[0],
+      piece: m[1],
+      frequence_jours: m[2],
+      points: m[3],
+      rotation: true,
+      assigne_a: S.moi.id
+      // ❌ PAS derniere_fois ici !
+    };
+  });
   
-  const d = document.createElement("div");
-  d.id = "undo";
-  d.style.cssText = "position:fixed;left:16px;right:16px;bottom:90px;background:#111827;color:#fff;padding:14px 16px;border-radius:14px;display:flex;justify-content:space-between;align-items:center;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.25);animation:slideIn 0.3s ease";
-  d.innerHTML = `<span>✅ ${esc(titre)}</span><button onclick="annuler()" style="background:none;border:none;color:#a5b4fc;font-weight:700;font-size:16px;cursor:pointer">Annuler</button>`;
-  
-  document.body.appendChild(d);
-  
-  undoTimer = setTimeout(() => {
-    if(d.parentNode) {
-      d.style.animation = "fadeOut 0.3s ease";
-      setTimeout(() => d.remove(), 300);
-    }
-  }, 5700);
-}
-
-async function annuler(){
-  if(!dernierUndo) return;
-  const u = dernierUndo;
-  dernierUndo = null;
-  document.getElementById("undo")?.remove();
+  if(!lignes.length) return fermer();
   
   try {
-    if(u.histoId) await sb.from("historique").delete().eq("id", u.histoId);
-    await sb.from("corvees").update({assigne_a: u.ancienAssigne}).eq("id", u.corveeId);
+    await sb.from("corvees").insert(lignes);
+    console.log("✅ Modèles ajoutés");
+    fermer();
     await charger();
   } catch(err) {
-    console.error("Erreur annuler():", err);
+    console.error("❌ Erreur insertion :", err);
+    alert("Erreur : " + err.message);
   }
 }
 
+// CORRECTION : Fonction sauverCorvee
 async function sauverCorvee(id){
   const o = {
     foyer_id: S.foyer.id,
-    titre: $("#f-titre").value.trim(),
-    piece: $("#f-piece").value.trim(),
-    frequence_jours: +$("#f-freq").value,
-    assigne_a: $("#f-ass").value || null,
-    rotation: $("#f-rot").checked,
-    points: +$("#f-pts").value || 1
+    titre: document.getElementById("f-titre").value.trim(),
+    piece: document.getElementById("f-piece").value.trim(),
+    frequence_jours: +document.getElementById("f-freq").value,
+    assigne_a: document.getElementById("f-ass").value || null,
+    rotation: document.getElementById("f-rot").checked,
+    points: +document.getElementById("f-pts").value || 1
   };
   
   if(!o.titre) return alert("Titre requis");
@@ -508,10 +314,10 @@ async function sauverCorvee(id){
     fermer();
     await charger();
   } catch(err) {
-    alert("Erreur : " + (err.message || err));
+    console.error("❌ Erreur :", err);
+    alert("Erreur : " + err.message);
   }
 }
-
 const MODELES = [
   ["Passer l'aspirateur","RDC",7,2],["Passer l'aspirateur","Étage",7,2],
   ["Passer la serpillère","RDC",14,2],["Passer la serpillère","Étage",14,2],
