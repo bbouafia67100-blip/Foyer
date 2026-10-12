@@ -193,7 +193,7 @@ function formModeles(){
 async function ajouterModeles(){
   const lignes=[...document.querySelectorAll(".mod:checked")].map(x=>{
     const m=MODELES[+x.value];
-    return {foyer_id:S.foyer.id,titre:m[0],piece:m[1],frequence_jours:m[2],points:m[3],rotation:true,assigne_a:S.moi.id,derniere_fois:today()};
+    return {foyer_id:S.foyer.id,titre:m[0],piece:m[1],frequence_jours:m[2],points:m[3],rotation:true,assigne_a:S.moi.id};
   });
   if(!lignes.length) return fermer();
   await sb.from("corvees").insert(lignes);
@@ -264,12 +264,12 @@ function vueToday(){
   h+=`<div class="sec">À faire par moi (${miennes.length})</div>`+(miennes.map(c=>carteCorvee(c)).join("")||`<div class="card s">Rien pour vous, bravo ✨</div>`);
   if(autres.length) h+=`<div class="sec">Pour l'autre (${autres.length})</div>`+autres.map(c=>carteCorvee(c)).join("");
   if(bientot.length) h+=`<div class="sec">Bientôt</div>`+bientot.map(c=>carteCorvee(c,false)).join("");
-  if(!S.corvees.length) h+=`<div class="center s">Aucune corvée. Touchez + pour commencer.</div>`;
+  if(!S.corvees.length) h+=`<div class="center s">Aucune corvée.<br><br><button class="btn" onclick="formModeles()">＋ Ajouter des corvées types</button><br><button class="btn sec2" onclick="formCorvee()">Créer ma propre corvée</button></div>`;
   return h;
 }
 function vueCorvees(){
   const pieces=[...new Set(S.corvees.map(c=>c.piece||"Sans pièce"))].sort();
-  return `<button class="chip" onclick="formModeles()">＋ Corvées types</button>`+(pieces.map(p=>`<div class="sec">${esc(p)}</div>`+S.corvees.filter(c=>(c.piece||"Sans pièce")===p).map(c=>carteCorvee(c,false)).join("")).join("")||`<div class="center s">Aucune corvée.</div>`);
+  return `<button class="btn sec2" style="margin:6px 0 0" onclick="formModeles()">＋ Ajouter des corvées types</button>`+
 }
 function vueProjets(){
   const f=S.filtre;
