@@ -751,7 +751,7 @@ function render(){
   if(newMain) newMain.scrollTop = sc;
 }
 
-/* ---------- Authentification ---------- */
+/* ---------- Démarrage ---------- */
 function ecranAccueil(){
   $("#app").innerHTML = `<div class="center"><div style="font-size:60px">🏡</div>
   <h1>Foyer</h1><p class="s">Corvées et projets à deux, synchronisés.</p>
@@ -794,7 +794,7 @@ async function rejoindre(){
     }
     
     localStorage.setItem("foyer", JSON.stringify({foyerId: foyer.id, moiId: me.id}));
-    demarrer();
+    await demarrer();
   } catch(err) {
     console.error("❌ Erreur :", err);
     alert("Erreur : " + err.message);
@@ -828,6 +828,7 @@ async function demarrer(){
   }
 }
 
+// ===== LANCER AU DÉMARRAGE =====
 if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 
 demarrer();
