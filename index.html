@@ -137,6 +137,7 @@ async function demarrer(){
 }
 
 /* ---------- Actions ---------- */
+let dernierUndo = null;
 async function faire(id){
   const c=S.corvees.find(x=>x.id===id); if(!c) return;
   let suivant=c.assigne_a;
@@ -144,9 +145,30 @@ async function faire(id){
     const i=S.membres.findIndex(m=>m.id===c.assigne_a);
     suivant=S.membres[(i+1)%S.membres.length].id;
   }
-  await sb.from("historique").insert({foyer_id:S.foyer.id,corvee_id:c.id,membre_id:S.moi.id,titre:c.titre,points:c.points});
+  const {data:h}=await sb.from("historique").insert({foyer_id:S.foyer.id,corvee_id:c.id,membre_id:S.moi.id,titre:c.titre,points:c.points}).select().single();
   await sb.from("corvees").update({derniere_fois:today(),assigne_a:suivant}).eq("id",id);
+  dernierUndo={corveeId:id,histoId:h?.id,ancienneDate:c.derniere_fois||null,ancienAssigne:c.assigne_a};
   if(navigator.vibrate) navigator.vibrate(30);
+  await charger();
+  afficherUndo(c.titre);
+}
+let undoTimer=null;
+function afficherUndo(titre){
+  clearTimeout(undoTimer);
+  document.getElementById("undo")?.remove();
+  const d=document.createElement("div");
+  d.id="undo";
+  d.style.cssText="position:fixed;left:16px;right:16px;bottom:90px;background:#111827;color:#fff;padding:14px 16px;border-radius:14px;display:flex;justify-content:space-between;align-items:center;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.25)";
+  d.innerHTML=`<span>✅ ${esc(titre)}</span><button onclick="annuler()" style="background:none;border:none;color:#a5b4fc;font-weight:700;font-size:16px">Annuler</button>`;
+  document.body.appendChild(d);
+  undoTimer=setTimeout(()=>d.remove(),6000);
+}
+async function annuler(){
+  if(!dernierUndo) return;
+  const u=dernierUndo; dernierUndo=null;
+  document.getElementById("undo")?.remove();
+  if(u.histoId) await sb.from("historique").delete().eq("id",u.histoId);
+  await sb.from("corvees").update({derniere_fois:u.ancienneDate,assigne_a:u.ancienAssigne}).eq("id",u.corveeId);
   charger();
 }
 async function sauverCorvee(id){
