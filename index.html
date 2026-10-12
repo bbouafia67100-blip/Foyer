@@ -409,12 +409,21 @@ let undoTimer=null;
 function afficherUndo(titre){
   clearTimeout(undoTimer);
   document.getElementById("undo")?.remove();
-  const d=document.createElement("div");
-  d.id="undo";
-  d.style.cssText="position:fixed;left:16px;right:16px;bottom:90px;background:#111827;color:#fff;padding:14px 16px;border-radius:14px;display:flex;justify-content:space-between;align-items:center;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.25)";
-  d.innerHTML=`<span>✅ ${esc(titre)}</span><button onclick="annuler()" style="background:none;border:none;color:#a5b4fc;font-weight:700;font-size:16px">Annuler</button>`;
+  
+  const d = document.createElement("div");
+  d.id = "undo";
+  d.style.cssText = "position:fixed;left:16px;right:16px;bottom:90px;background:#111827;color:#fff;padding:14px 16px;border-radius:14px;display:flex;justify-content:space-between;align-items:center;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.25)";
+  d.innerHTML = `<span>✅ ${esc(titre)}</span><button onclick="annuler()" style="background:none;border:none;color:#a5b4fc;font-weight:700;font-size:16px">Annuler</button>`;
+  
+  // 🎯 Animation d'apparition
+  d.style.animation = "slideIn 0.3s ease";
   document.body.appendChild(d);
-  undoTimer=setTimeout(()=>d.remove(),6000);
+  
+  undoTimer = setTimeout(() => {
+    // 🎯 Animation de disparition
+    d.style.animation = "fadeOut 0.3s ease";
+    setTimeout(() => d.remove(), 300);
+  }, 5700); // 6000 - 300 pour que l'animation finisse juste avant la suppression
 }
 async function annuler(){
   if(!dernierUndo) return;
@@ -590,12 +599,28 @@ const TITRES={today:["Aujourd'hui",()=>new Date().toLocaleDateString("fr-FR",{we
 function render(){
   if(!S.foyer) return;
   if(S.modal) return;
-  const [t,sub]=TITRES[S.tab], vues={today:vueToday,semaine:vueSemaine,corvees:vueCorvees,projets:vueProjets,bilan:vueBilan};
-  const sc=$("main")?.scrollTop||0;
-  $("#app").innerHTML=`<header><h1>${t}</h1><p>${sub()}</p></header><main>${vues[S.tab]()}</main>
-  ${["corvees","projets","today","semaine"].includes(S.tab)?`<button class="fab" onclick="${S.tab==="projets"?"formProjet()":"formCorvee()"}">+</button>`:""}
-  <nav>${[["today","☀️","Aujourd'hui"],["semaine","📅","Semaine"],["corvees","🧹","Corvées"],["projets","🔨","Projets"],["bilan","📊","Bilan"]].map(([k,i,l])=>`<button class="${S.tab===k?"on":""}" onclick="S.tab='${k}';render()"><span>${i}</span>${l}</button>`).join("")}</nav>`;
-  $("main").scrollTop=sc;
+  
+  const [t,sub] = TITRES[S.tab], 
+        vues = {today:vueToday, semaine:vueSemaine, corvees:vueCorvees, projets:vueProjets, bilan:vueBilan};
+  
+  const main = $("main");
+  const sc = main?.scrollTop || 0;
+  
+  // 🎯 Ajoute une transition au changement de contenu
+  if(main) {
+    main.style.opacity = "0.7";
+    main.style.transition = "opacity 0.2s ease";
+  }
+  
+  $("#app").innerHTML = `<header><h1>${t}</h1><p>${sub()}</p></header><main>${vues[S.tab]()}</main>
+    ${["corvees","projets","today","semaine"].includes(S.tab) ? `<button class="fab" onclick="${S.tab==="projets"?"formProjet()":"formCorvee()}">+</button>` : ""}
+    <nav>${[["today","☀️","Aujourd'hui"],["semaine","📅","Semaine"],["corvees","🧹","Corvées"],["projets","🔨","Projets"],["bilan","📊","Bilan"]].map(([k,i,l]) => `<button class="${S.tab===k?"on":""}" onclick="S.tab='${k}';render()"><span>${i}</span>${l}</button>`).join("")}</nav>`;
+  
+  const newMain = $("main");
+  if(newMain) {
+    newMain.scrollTop = sc;
+    newMain.style.opacity = "1";
+  }
 }
 
 if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
