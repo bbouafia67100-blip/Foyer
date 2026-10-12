@@ -150,7 +150,7 @@ function ecranAccueil(){
   const hasInvite = params.has("invite");
   
   const html = `<div class="center" style="padding-top:40px">
-    <div style="font-size:64px;margin-bottom:8px">🍃</div>
+    <img src="icon-180.png" alt="Foyer" style="width:80px;height:80px;margin-bottom:8px;border-radius:22px">
     <h1>Foyer</h1>
     <p class="s">Corvées et projets à deux, synchronisés.</p>
     <div class="card" style="text-align:left;margin-top:32px">
@@ -503,7 +503,7 @@ function vueBilan(){
   (S.histo.slice(0,15).map(h=>`<div class="card row">${av(membre(h.membre_id))}<div class="grow"><div class="t">${esc(h.titre)}</div><div class="s">${new Date(h.fait_le).toLocaleString("fr-FR",{weekday:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})}</div></div><span class="pill">+${h.points}</span></div>`).join("")||`<div class="card s">Pas encore d'activité.</div>`)+
   `<div class="sec">Foyer</div>
   <div class="card"><div class="s">Code de ce foyer</div><div class="stat" style="letter-spacing:4px;margin-bottom:12px">${esc(S.foyer.code)}</div>
-  <button class="btn" onclick="genererInvitation()">🍃 Inviter mon partenaire</button>
+  <button class="btn" onclick="genererInvitation()">📤 Inviter mon partenaire</button>
   <button class="btn sec2" onclick="if(confirm('Quitter ce foyer sur cet appareil ?')){localStorage.removeItem('foyer');location.reload()}">Se déconnecter</button></div>`;
 }
 
