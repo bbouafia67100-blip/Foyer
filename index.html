@@ -179,15 +179,24 @@ async function sauverCorvee(id){
   fermer(); charger();
 }
 const MODELES=[
-  ["Passer l'aspirateur","Salon",7,2],["Passer la serpillère","Cuisine",14,2],
-  ["Nettoyer la salle de bain","Salle de bain",7,3],["Nettoyer les toilettes","Toilettes",7,2],
+  ["Passer l'aspirateur","RDC",7,2],["Passer l'aspirateur","Étage",7,2],
+  ["Passer la serpillère","RDC",14,2],["Passer la serpillère","Étage",14,2],
+  ["Nettoyer la salle de bain","RDC",7,3],["Nettoyer la salle de bain","Étage",7,3],
+  ["Nettoyer les toilettes","RDC",7,2],["Nettoyer les toilettes","Étage",7,2],
+  ["Changer les draps","Chambre RDC",14,2],["Changer les draps","Chambre étage",14,2],
+  ["Ranger les habits","Chambres",7,1],
+  ["Nettoyer les litières des chats","Litières",1,1],
   ["Sortir les poubelles","Cuisine",3,1],["Faire la vaisselle","Cuisine",1,1],
-  ["Changer les draps","Chambre",14,2],["Lessive","Buanderie",7,2],
-  ["Nettoyer le frigo","Cuisine",30,3],["Dépoussiérer","Salon",14,1],["Nettoyer les vitres","Salon",30,3]
+  ["Lessive","Buanderie",7,2],["Nettoyer le frigo","Cuisine",30,3],
+  ["Dépoussiérer","Salon",14,1],["Nettoyer les vitres","Salon",30,3]
 ];
 function formModeles(){
+  const groupes={};
+  MODELES.forEach((m,i)=>{(groupes[m[0]]=groupes[m[0]]||[]).push(i);});
   ouvrir(`<h2>Corvées types</h2><p class="s">Cochez celles à ajouter, vous pourrez les modifier ensuite.</p>
-  ${MODELES.map((m,i)=>`<label style="display:flex;gap:10px;align-items:center;color:var(--txt);font-size:16px;font-weight:500"><input type="checkbox" class="mod" value="${i}" style="width:auto"> ${esc(m[0])} <span class="s">(${esc(m[1])})</span></label>`).join("")}
+  ${Object.entries(groupes).map(([titre,idx])=>`<div class="t" style="margin-top:14px">${esc(titre)}</div>`+
+    idx.map(i=>`<label style="display:flex;gap:10px;align-items:center;color:var(--txt);font-size:16px;font-weight:500;margin:6px 0"><input type="checkbox" class="mod" value="${i}" style="width:auto"> ${esc(MODELES[i][1])}</label>`).join("")
+  ).join("")}
   <button class="btn" onclick="ajouterModeles()">Ajouter</button>`);
 }
 async function ajouterModeles(){
