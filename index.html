@@ -160,21 +160,26 @@ function occurrences(c, debutISO, finISO){
   const res = [];
   const t = today();
   
-  if(!c.derniere_fois){
+  if(!c.derniere_fois){ 
+    // Jamais faite : due aujourd'hui
     if(t >= debutISO && t <= finISO) res.push(t);
     return res;
   }
   
-  const base = new Date(c.derniere_fois+"T12:00:00");
+  // CORRECTION : Pas de return prématuré !
+  const base = new Date(c.derniere_fois + "T12:00:00");
   let d = new Date(base);
   d.setDate(d.getDate() + c.frequence_jours);
-  let garde = 0;
   
+  let garde = 0;
   while(iso(d) <= finISO && garde++ < 400){
     const s = iso(d);
-    if(s < t){
+    if(s < t){ 
+      // En retard : affichée aujourd'hui
       if(t >= debutISO && t <= finISO && !res.includes(t)) res.push(t);
-    } else if(s >= debutISO) res.push(s);
+    } else if(s >= debutISO) {
+      res.push(s);
+    }
     d.setDate(d.getDate() + c.frequence_jours);
   }
   
@@ -382,30 +387,26 @@ async function demarrer(){
 
 /* ---------- Actions ---------- */
 async function faire(id){
-  console.log("🚀 faire() appelée avec ID:", id);
+  console.log("👉 Tentative de marquer comme faite :", id);
   
-  if(!id) {
-    console.error("❌ ID manquant !");
-    return;
-  }
-  
-  const c = S.corvees.find(x => x.id === id);
+  const c = S.corvees.find(function(x) { return x.id === id; });
   if(!c) {
-    console.error("❌ Corvée non trouvée pour ID:", id);
+    console.error("❌ Corvée introuvable :", id);
     return;
   }
   
-  console.log("✅ Marquée comme faite :", c.titre);
+  console.log("✅ Corvée trouvée :", c.titre);
+  
+  let suivant = c.assigne_a;
+  if(c.rotation && S.membres.length > 1){
+    const i = S.membres.findIndex(function(m) { return m.id === c.assigne_a; });
+    suivant = S.membres[(i + 1) % S.membres.length].id;
+    console.log("🔄 Rotation : assigné à", suivant);
+  }
   
   try {
-    let suivant = c.assigne_a;
-    if(c.rotation && S.membres.length > 1){
-      const i = S.membres.findIndex(m => m.id === c.assigne_a);
-      suivant = S.membres[(i + 1) % S.membres.length].id;
-    }
-    
-    // 1. Insérer dans l'historique
-    const {data:h, error:errH} = await sb.from("historique").insert({
+    // 1. Ajouter à l'historique
+    const result = await sb.from("historique").insert({
       foyer_id: S.foyer.id,
       corvee_id: c.id,
       membre_id: S.moi.id,
@@ -413,25 +414,26 @@ async function faire(id){
       points: c.points
     }).select().single();
     
-    if(errH) throw errH;
-    console.log("📝 Ajoutée à l'historique:", h?.id);
+    const h = result.data;
+    console.log("📝 Historique enregistré :", h ? h.id : "?");
     
-    // 2. Mettre à jour la corvée
-    const {error:errU} = await sb.from("corvees")
-      .update({assigne_a: suivant})
-      .eq("id", id);
+    // 2. IMPORTANT : Mettre à jour derniere_fois ET assigne_a
+    const updateResult = await sb.from("corvees").update({
+      derniere_fois: today(),  // ← C'ÉTAIT MANQUANT !
+      assigne_a: suivant
+    }).eq("id", id);
     
-    if(errU) throw errU;
-    console.log("💾 Corvée mise à jour");
+    console.log("💾 Corvée mise à jour avec derniere_fois =", today());
     
     // 3. Sauvegarder pour l'undo
     dernierUndo = {
       corveeId: id,
-      histoId: h?.id,
+      histoId: h ? h.id : null,
+      ancienneDate: c.derniere_fois || null,
       ancienAssigne: c.assigne_a
     };
     
-    // 4. Haptic feedback
+    // 4. Feedback
     if(navigator.vibrate) navigator.vibrate(30);
     
     // 5. Recharger
@@ -440,9 +442,10 @@ async function faire(id){
     // 6. Afficher l'undo
     afficherUndo(c.titre);
     
-    console.log("✨ Succès !");
+    console.log("✨ Succès complet !");
+    
   } catch(err) {
-    console.error("❌ Erreur:", err);
+    console.error("❌ Erreur :", err);
     alert("Erreur : " + (err.message || err));
   }
 }
