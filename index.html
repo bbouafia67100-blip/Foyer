@@ -20,41 +20,45 @@ header{padding:14px 20px 6px}
 header h1{margin:0;font-size:28px;font-weight:700;letter-spacing:-.5px}
 header p{margin:2px 0 0;color:var(--mut);font-size:14px}
 main{flex:1;overflow-y:auto;padding:8px 16px 100px}
-.card{background:var(--card);border-radius:16px;padding:14px 16px;margin:10px 0;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.card{background:var(--card);border-radius:16px;padding:14px 16px;margin:10px 0;box-shadow:0 1px 2px rgba(0,0,0,.04);transition:all 0.2s ease}
+.card:active{animation:bounce 0.3s ease}
 .row{display:flex;align-items:center;gap:12px}
 .grow{flex:1;min-width:0}
 .t{font-weight:600;font-size:16px}
 .s{color:var(--mut);font-size:13px;margin-top:2px}
 .sec{font-size:13px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.6px;margin:22px 4px 4px}
-.chk{width:32px;height:32px;border-radius:50%;border:2px solid #d4d4d8;background:none;flex:none;font-size:16px;color:#fff;display:flex;align-items:center;justify-content:center}
+.chk{width:32px;height:32px;border-radius:50%;border:2px solid #d4d4d8;background:none;flex:none;font-size:16px;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s ease}
+.chk:hover{border-color:var(--acc)}
 .chk.on{background:var(--ok);border-color:var(--ok)}
 .pill{font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;background:#eef;color:var(--acc)}
 .pill.late{background:#fee2e2;color:var(--bad)}.pill.soon{background:#ffedd5;color:var(--warn)}.pill.ok{background:#dcfce7;color:var(--ok)}
 .av{width:30px;height:30px;border-radius:50%;color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex:none}
-nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);border-top:1px solid var(--line);padding:6px 0 calc(6px + env(safe-area-inset-bottom))}
-nav button{flex:1;background:none;border:0;padding:6px;font-size:11px;color:var(--mut);display:flex;flex-direction:column;align-items:center;gap:2px}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);border-top:1px solid var(--line);padding:6px 0 calc(6px + env(safe-area-inset-bottom));z-index:9}
+nav button{flex:1;background:none;border:0;padding:6px;font-size:11px;color:var(--mut);display:flex;flex-direction:column;align-items:center;gap:2px;transition:all 0.3s ease}
 nav button span{font-size:22px}
 nav button.on{color:var(--acc)}
-.fab{position:fixed;right:18px;bottom:calc(82px + env(safe-area-inset-bottom));width:56px;height:56px;border-radius:50%;background:var(--acc);color:#fff;border:0;font-size:30px;box-shadow:0 6px 18px rgba(79,70,229,.4)}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:flex-end;z-index:10}
-.sheet{background:var(--bg);width:100%;border-radius:22px 22px 0 0;padding:20px 20px calc(24px + env(safe-area-inset-bottom));max-height:88%;overflow:auto}
+.fab{position:fixed;right:18px;bottom:calc(82px + env(safe-area-inset-bottom));width:56px;height:56px;border-radius:50%;background:var(--acc);color:#fff;border:0;font-size:30px;box-shadow:0 6px 18px rgba(79,70,229,.4);cursor:pointer;transition:transform 0.2s ease;z-index:8}
+.fab:active{transform:scale(0.95)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:flex-end;z-index:10;animation:fadeIn 0.3s ease}
+.sheet{background:var(--bg);width:100%;border-radius:22px 22px 0 0;padding:20px 20px calc(24px + env(safe-area-inset-bottom));max-height:88%;overflow:auto;animation:slideIn 0.3s ease}
 .sheet h2{margin:0 0 14px;font-size:20px}
 label{display:block;font-size:13px;color:var(--mut);margin:12px 0 5px;font-weight:600}
 input[readonly]{background:#f3f4f6;cursor:default}
 #codeInfo{min-height:20px}
 input,select,textarea{width:100%;padding:13px;border:1px solid var(--line);border-radius:12px;font-size:16px;background:#fff;font-family:inherit}
-.btn{width:100%;padding:15px;border:0;border-radius:14px;background:var(--acc);color:#fff;font-size:16px;font-weight:600;margin-top:18px}
+.btn{width:100%;padding:15px;border:0;border-radius:14px;background:var(--acc);color:#fff;font-size:16px;font-weight:600;margin-top:18px;cursor:pointer;transition:all 0.2s ease}
+.btn:active{transform:scale(0.98)}
 .btn.sec2{background:#e5e5ea;color:var(--txt);margin-top:8px}.btn.del{background:#fee2e2;color:var(--bad);margin-top:8px}
 .bar{height:10px;border-radius:99px;background:#e5e5ea;overflow:hidden;display:flex;margin:8px 0}
 .seg{font-size:11px}
 .center{text-align:center;padding:50px 24px}
-.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 0}
-.chip{padding:8px 14px;border-radius:99px;background:#e5e5ea;font-size:14px;white-space:nowrap;border:0;cursor:pointer}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 0;margin:8px 0}
+.chip{padding:8px 14px;border-radius:99px;background:#e5e5ea;font-size:14px;white-space:nowrap;border:0;cursor:pointer;transition:all 0.2s ease}
 .chip.on{background:var(--acc);color:#fff}
 .stat{font-size:34px;font-weight:700}
 .semnav{display:flex;align-items:center;gap:8px;margin:4px 0 12px}
 .bande{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:4px}
-.jour{border:none;background:var(--card,#fff);border-radius:14px;padding:8px 0;display:flex;flex-direction:column;align-items:center;gap:2px;font:inherit;color:inherit;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.jour{border:none;background:var(--card,#fff);border-radius:14px;padding:8px 0;display:flex;flex-direction:column;align-items:center;gap:2px;font:inherit;color:inherit;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.06);transition:all 0.2s ease}
 .jour .jl{font-size:11px;opacity:.55;font-weight:600}
 .jour .jn{font-size:17px;font-weight:700}
 .jour .jb{height:16px;display:flex;align-items:center}
@@ -70,7 +74,6 @@ input,select,textarea{width:100%;padding:13px;border:1px solid var(--line);borde
   0%, 100% { transform: scale(1); }
   50% { transform: scale(0.95); }
 }
-
 @keyframes slideIn {
   from { 
     transform: translateY(100%);
@@ -81,7 +84,6 @@ input,select,textarea{width:100%;padding:13px;border:1px solid var(--line);borde
     opacity: 1;
   }
 }
-
 @keyframes fadeOut {
   from { 
     opacity: 1;
@@ -92,7 +94,6 @@ input,select,textarea{width:100%;padding:13px;border:1px solid var(--line);borde
     transform: translateY(10px);
   }
 }
-
 @keyframes fadeIn {
   from { 
     opacity: 0;
@@ -100,32 +101,6 @@ input,select,textarea{width:100%;padding:13px;border:1px solid var(--line);borde
   to { 
     opacity: 1;
   }
-}
-
-/* Transitions sur les éléments */
-.card {
-  transition: all 0.2s ease;
-}
-
-.card:active {
-  animation: bounce 0.3s ease;
-}
-
-.modal {
-  animation: fadeIn 0.3s ease;
-}
-
-.sheet {
-  animation: slideIn 0.3s ease;
-}
-
-/* Pour le nav qui change */
-nav button {
-  transition: all 0.3s ease;
-}
-
-nav button.on {
-  animation: fadeIn 0.3s ease;
 }
 </style>
 </head>
@@ -140,68 +115,111 @@ const COULEURS = ["#4f46e5","#ec4899","#0ea5e9","#f59e0b"];
 const STATUTS = {idee:"💡 Idée",afaire:"📋 À faire",encours:"🔧 En cours",fait:"✅ Fait"};
 const $ = s => document.querySelector(s);
 const esc = s => String(s??"").split("&").join("\u0026amp;").split("<").join("\u0026lt;").split(">").join("\u0026gt;").split('"').join("\u0026quot;").split("'").join("\u0026#39;");
+
 let S = {foyer:null,moi:null,membres:[],corvees:[],projets:[],histo:[],tab:"today",modal:null,filtre:"tous",semDec:0,jourSel:null};
+let dernierUndo = null;
 
 const today = () => {
   const d = new Date();
   return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
 };
+
 const jours = d => Math.floor((new Date(today()) - new Date(d)) / 864e5);
+
 function echeance(c){
   if(!c.derniere_fois) return -1;
   return c.frequence_jours - jours(c.derniere_fois);
 }
 
 /* ---------- Semaine ---------- */
-const JOURS_COURTS=["L","M","M","J","V","S","D"];
-function iso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
-function lundiDe(d){const x=new Date(d);x.setHours(12,0,0,0);const j=(x.getDay()+6)%7;x.setDate(x.getDate()-j);return x;}
-function joursSemaine(){
-  const l=lundiDe(new Date());l.setDate(l.getDate()+S.semDec*7);
-  return Array.from({length:7},(_,i)=>{const d=new Date(l);d.setDate(l.getDate()+i);return d;});
+const JOURS_COURTS = ["L","M","M","J","V","S","D"];
+
+function iso(d){
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
 }
-function occurrences(c,debutISO,finISO){
-  const res=[];
-  const t=today();
+
+function lundiDe(d){
+  const x = new Date(d);
+  x.setHours(12,0,0,0);
+  const j = (x.getDay()+6)%7;
+  x.setDate(x.getDate()-j);
+  return x;
+}
+
+function joursSemaine(){
+  const l = lundiDe(new Date());
+  l.setDate(l.getDate()+S.semDec*7);
+  return Array.from({length:7},(_,i)=>{
+    const d = new Date(l);
+    d.setDate(l.getDate()+i);
+    return d;
+  });
+}
+
+function occurrences(c, debutISO, finISO){
+  const res = [];
+  const t = today();
+  
   if(!c.derniere_fois){
-    if(t>=debutISO&&t<=finISO) res.push(t);
+    if(t >= debutISO && t <= finISO) res.push(t);
     return res;
   }
-  const base=new Date(c.derniere_fois+"T12:00:00");
-  let d=new Date(base);d.setDate(d.getDate()+c.frequence_jours);
-  let garde=0;
-  while(iso(d)<=finISO&&garde++<400){
-    const s=iso(d);
-    if(s<t){
-      if(t>=debutISO&&t<=finISO&&!res.includes(t)) res.push(t);
-    } else if(s>=debutISO) res.push(s);
-    d.setDate(d.getDate()+c.frequence_jours);
+  
+  const base = new Date(c.derniere_fois+"T12:00:00");
+  let d = new Date(base);
+  d.setDate(d.getDate() + c.frequence_jours);
+  let garde = 0;
+  
+  while(iso(d) <= finISO && garde++ < 400){
+    const s = iso(d);
+    if(s < t){
+      if(t >= debutISO && t <= finISO && !res.includes(t)) res.push(t);
+    } else if(s >= debutISO) res.push(s);
+    d.setDate(d.getDate() + c.frequence_jours);
   }
+  
   return res;
 }
+
 function corveesDuJour(s){
-  return S.corvees.filter(c=>occurrences(c,s,s).includes(s));
+  return S.corvees.filter(c => occurrences(c, s, s).includes(s));
 }
-const membre = id => S.membres.find(m=>m.id===id);
-function av(m){ return m?`<div class="av" style="background:${esc(m.couleur)}">${esc(m.nom[0].toUpperCase())}</div>`:`<div class="av" style="background:#ccc">?</div>`; }
+
+const membre = id => S.membres.find(m => m.id === id);
+
+function av(m){ 
+  return m ? `<div class="av" style="background:${esc(m.couleur)}">${esc(m.nom[0].toUpperCase())}</div>` : `<div class="av" style="background:#ccc">?</div>`;
+}
 
 /* ---------- Données ---------- */
 async function charger(){
-  const f = S.foyer.id;
-  const [m,c,p,h] = await Promise.all([
-    sb.from("membres").select("*").eq("foyer_id",f),
-    sb.from("corvees").select("*").eq("foyer_id",f),
-    sb.from("projets").select("*").eq("foyer_id",f),
-    sb.from("historique").select("*").eq("foyer_id",f).order("fait_le",{ascending:false}).limit(500)
-  ]);
-  S.membres=m.data||[];S.corvees=c.data||[];S.projets=p.data||[];S.histo=h.data||[];
-  render();
+  if(!S.foyer) return;
+  
+  try {
+    const f = S.foyer.id;
+    const [m,c,p,h] = await Promise.all([
+      sb.from("membres").select("*").eq("foyer_id",f),
+      sb.from("corvees").select("*").eq("foyer_id",f),
+      sb.from("projets").select("*").eq("foyer_id",f),
+      sb.from("historique").select("*").eq("foyer_id",f).order("fait_le",{ascending:false}).limit(500)
+    ]);
+    
+    S.membres = m.data || [];
+    S.corvees = c.data || [];
+    S.projets = p.data || [];
+    S.histo = h.data || [];
+    
+    render();
+  } catch(err) {
+    console.error("❌ Erreur charger():", err);
+  }
 }
+
 function ecouter(){
   const f = "foyer_id=eq."+S.foyer.id;
   const ch = sb.channel("foyer-"+S.foyer.id);
-  ["corvees","projets","historique","membres"].forEach(t=>{
-    ch.on("postgres_changes",{event:"*",schema:"public",table:t,filter:f},()=>charger());
+  ["corvees","projets","historique","membres"].forEach(t => {
+    ch.on("postgres_changes",{event:"*",schema:"public",table:t,filter:f},() => charger());
   });
   ch.subscribe();
 }
@@ -236,41 +254,14 @@ function ecranAccueil(){
   $("#app").innerHTML = html;
   verifierInvitation();
 }
-async function rejoindre(){
-  const nom=$("#nom").value.trim(); let code=$("#code").value.trim().toUpperCase();
-  if(!nom) return alert("Entrez votre prénom");
-  let foyer;
-  if(code){
-    const {data}=await sb.from("foyers").select("*").eq("code",code).maybeSingle();
-    if(!data) return alert("Code introuvable");
-    foyer=data;
-  } else {
-    code=Math.random().toString(36).slice(2,8).toUpperCase();
-    const {data,error}=await sb.from("foyers").insert({code}).select().single();
-    if(error) return alert("Erreur : "+error.message);
-    foyer=data;
-  }
-  const {data:existants}=await sb.from("membres").select("*").eq("foyer_id",foyer.id);
-  let me=(existants||[]).find(m=>m.nom.trim().toLowerCase()===nom.toLowerCase());
-  if(!me){
-    const {data,error:e2}=await sb.from("membres").insert({foyer_id:foyer.id,nom,couleur:COULEURS[(existants||[]).length%COULEURS.length]}).select().single();
-    if(e2) return alert("Erreur : "+e2.message);
-    me=data;
-  }
-  localStorage.setItem("foyer",JSON.stringify({foyerId:foyer.id,moiId:me.id}));
-  demarrer();
-}
-  /* Vérifier les invitations à l'accueil */
+
 function verifierInvitation(){
   const params = new URLSearchParams(window.location.search);
-  const token = params.get("invite");
-  
-  if(token){
+  if(params.has("invite")){
+    const token = params.get("invite");
     $("#code").value = token;
     $("#code").readOnly = true;
-    $("#codeInfo").innerHTML = `<div style="color:var(--ok);font-size:13px;margin-top:4px">✅ Invitation détectée</div>`;
-    $("#nom").focus();
-    window.history.replaceState({}, document.title, window.location.pathname);
+    $("#codeInfo").innerHTML = `<p class="s" style="color:var(--ok);margin-top:8px">✅ Invitation détectée</p>`;
   }
 }
 
@@ -282,49 +273,48 @@ async function rejoindre(){
   if(!codeOuToken) return alert("Entrez un code ou acceptez une invitation");
   
   let foyer;
-  let estInvitation = false;
   
-  // Vérifier si c'est une invitation (token long) ou un code classique
-  if(codeOuToken.length >= 8){
-    // C'est un token d'invitation
-    const {data: inv} = await sb.from("invitations")
-      .select("foyers(*)")
-      .eq("token", codeOuToken)
-      .gt("expires_at", new Date().toISOString())
-      .eq("used", false)
-      .maybeSingle();
+  try {
+    // Vérifier si c'est une invitation (token long) ou un code classique
+    if(codeOuToken.length >= 8){
+      // C'est un token d'invitation
+      const {data: inv} = await sb.from("invitations")
+        .select("foyers(*)")
+        .eq("token", codeOuToken)
+        .gt("expires_at", new Date().toISOString())
+        .eq("used", false)
+        .maybeSingle();
+      
+      if(!inv) return alert("Invitation invalide, expirée ou déjà utilisée");
+      foyer = inv.foyers;
+    } else {
+      // Code de foyer classique (6 caractères)
+      const {data} = await sb.from("foyers").select("*").eq("code", codeOuToken).maybeSingle();
+      if(!data) return alert("Code introuvable");
+      foyer = data;
+    }
     
-    if(!inv) return alert("Invitation invalide, expirée ou déjà utilisée");
-    foyer = inv.foyers;
-    estInvitation = true;
-  } else {
-    // Code de foyer classique (6 caractères)
-    const {data} = await sb.from("foyers").select("*").eq("code", codeOuToken).maybeSingle();
-    if(!data) return alert("Code introuvable");
-    foyer = data;
+    // Vérifier si ce prénom existe déjà
+    const {data:existants} = await sb.from("membres").select("*").eq("foyer_id", foyer.id);
+    let me = (existants||[]).find(m => m.nom.trim().toLowerCase() === nom.toLowerCase());
+    
+    if(!me){
+      const {data, error:e2} = await sb.from("membres").insert({
+        foyer_id: foyer.id,
+        nom,
+        couleur: COULEURS[(existants||[]).length % COULEURS.length]
+      }).select().single();
+      
+      if(e2) return alert("Erreur : "+e2.message);
+      me = data;
+    }
+    
+    localStorage.setItem("foyer", JSON.stringify({foyerId: foyer.id, moiId: me.id}));
+    demarrer();
+  } catch(err) {
+    console.error("Erreur rejoindre():", err);
+    alert("Erreur : " + (err.message || err));
   }
-  
-  // Vérifier si ce prénom existe déjà
-  const {data:existants} = await sb.from("membres").select("*").eq("foyer_id", foyer.id);
-  let me = (existants||[]).find(m => m.nom.trim().toLowerCase() === nom.toLowerCase());
-  
-  if(!me){
-    const {data, error:e2} = await sb.from("membres").insert({
-      foyer_id: foyer.id,
-      nom,
-      couleur: COULEURS[(existants||[]).length % COULEURS.length]
-    }).select().single();
-    if(e2) return alert("Erreur : "+e2.message);
-    me = data;
-  }
-  
-  // Marquer l'invitation comme utilisée
-  if(estInvitation){
-    await sb.from("invitations").update({used: true, used_by: me.id}).eq("token", codeOuToken);
-  }
-  
-  localStorage.setItem("foyer", JSON.stringify({foyerId: foyer.id, moiId: me.id}));
-  demarrer();
 }
 
 /* Générer une invitation */
@@ -333,22 +323,26 @@ async function genererInvitation(){
   const expires = new Date();
   expires.setDate(expires.getDate() + 1); // 24h
   
-  const {error} = await sb.from("invitations").insert({
-    foyer_id: S.foyer.id,
-    token,
-    created_by: S.moi.id,
-    expires_at: expires.toISOString()
-  });
-  
-  if(error) return alert("Erreur : "+error.message);
-  
-  const lien = `${window.location.origin}${window.location.pathname}?invite=${token}`;
-  afficherPartageInvitation(lien);
+  try {
+    const {error} = await sb.from("invitations").insert({
+      foyer_id: S.foyer.id,
+      token,
+      created_by: S.moi.id,
+      expires_at: expires.toISOString()
+    });
+    
+    if(error) return alert("Erreur : "+error.message);
+    
+    const lien = `${window.location.origin}${window.location.pathname}?invite=${token}`;
+    afficherPartageInvitation(lien);
+  } catch(err) {
+    console.error("Erreur genererInvitation():", err);
+  }
 }
 
 function afficherPartageInvitation(lien){
   ouvrir(`<div style="text-align:center;padding:20px 0">
-     <img src="icon-180.png" alt="Foyer" style="width:60px;height:60px;margin-bottom:12px;border-radius:18px">
+    <img src="icon-180.png" alt="Foyer" style="width:60px;height:60px;margin-bottom:12px;border-radius:18px">
     <h2>Inviter un membre</h2>
     <p class="s">Partagez ce lien à votre partenaire</p>
   </div>
@@ -360,130 +354,162 @@ function afficherPartageInvitation(lien){
     setTimeout(() => btn.textContent = '📋 Copier le lien', 2000);
   ">📋 Copier le lien</button>
   ${navigator.share ? `<button class="btn sec2" onclick="navigator.share({title:'Foyer 🍃',text:'Rejoignez mon foyer Foyer',url:'${esc(lien)}'}).catch(()=>{})">📤 Partager</button>` : ""}
-  <p class="s" style="margin-top:20px;color:var(--mut)">Valide pendant 24 heures</p>
-  `);
+  <p class="s" style="margin-top:20px;color:var(--mut)">Valide pendant 24 heures</p>`);
 }
+
 async function demarrer(){
-  const ls=JSON.parse(localStorage.getItem("foyer")||"null");
+  const ls = JSON.parse(localStorage.getItem("foyer")||"null");
   if(!ls) return ecranAccueil();
-  const {data:foyer}=await sb.from("foyers").select("*").eq("id",ls.foyerId).maybeSingle();
-  const {data:moi}=await sb.from("membres").select("*").eq("id",ls.moiId).maybeSingle();
-  if(!foyer||!moi){localStorage.removeItem("foyer");return ecranAccueil();}
-  S.foyer=foyer;S.moi=moi;
-  await charger(); ecouter();
+  
+  try {
+    const {data:foyer} = await sb.from("foyers").select("*").eq("id",ls.foyerId).maybeSingle();
+    const {data:moi} = await sb.from("membres").select("*").eq("id",ls.moiId).maybeSingle();
+    
+    if(!foyer || !moi){
+      localStorage.removeItem("foyer");
+      return ecranAccueil();
+    }
+    
+    S.foyer = foyer;
+    S.moi = moi;
+    await charger();
+    ecouter();
+  } catch(err) {
+    console.error("Erreur demarrer():", err);
+    ecranAccueil();
+  }
 }
 
 /* ---------- Actions ---------- */
-let dernierUndo = null;
 async function faire(id){
-  console.log("👉 Tentative de marquer comme faite :", id);
+  console.log("🚀 faire() appelée avec ID:", id);
   
-  const c = S.corvees.find(x => x.id === id); 
-  if(!c) {
-    console.error("❌ Corvée introuvable :", id);
+  if(!id) {
+    console.error("❌ ID manquant !");
     return;
   }
   
-  console.log("✅ Corvée trouvée :", c.titre);
-  
-  let suivant = c.assigne_a;
-  if(c.rotation && S.membres.length > 1){
-    const i = S.membres.findIndex(m => m.id === c.assigne_a);
-    suivant = S.membres[(i + 1) % S.membres.length].id;
-    console.log("🔄 Rotation : assigné à", suivant);
+  const c = S.corvees.find(x => x.id === id);
+  if(!c) {
+    console.error("❌ Corvée non trouvée pour ID:", id);
+    return;
   }
+  
+  console.log("✅ Marquée comme faite :", c.titre);
   
   try {
-    const {data:h} = await sb.from("historique").insert({
-      foyer_id:S.foyer.id,
-      corvee_id:c.id,
-      membre_id:S.moi.id,
-      titre:c.titre,
-      points:c.points
+    let suivant = c.assigne_a;
+    if(c.rotation && S.membres.length > 1){
+      const i = S.membres.findIndex(m => m.id === c.assigne_a);
+      suivant = S.membres[(i + 1) % S.membres.length].id;
+    }
+    
+    // 1. Insérer dans l'historique
+    const {data:h, error:errH} = await sb.from("historique").insert({
+      foyer_id: S.foyer.id,
+      corvee_id: c.id,
+      membre_id: S.moi.id,
+      titre: c.titre,
+      points: c.points
     }).select().single();
     
-    console.log("📝 Historique enregistré :", h?.id);
+    if(errH) throw errH;
+    console.log("📝 Ajoutée à l'historique:", h?.id);
     
-    await sb.from("corvees").update({assigne_a:suivant}).eq("id",id);
+    // 2. Mettre à jour la corvée
+    const {error:errU} = await sb.from("corvees")
+      .update({assigne_a: suivant})
+      .eq("id", id);
     
+    if(errU) throw errU;
     console.log("💾 Corvée mise à jour");
     
-    dernierUndo = {corveeId:id, histoId:h?.id, ancienAssigne:c.assigne_a};
+    // 3. Sauvegarder pour l'undo
+    dernierUndo = {
+      corveeId: id,
+      histoId: h?.id,
+      ancienAssigne: c.assigne_a
+    };
     
+    // 4. Haptic feedback
     if(navigator.vibrate) navigator.vibrate(30);
+    
+    // 5. Recharger
     await charger();
+    
+    // 6. Afficher l'undo
     afficherUndo(c.titre);
     
-    console.log("✨ Tout bon !");
+    console.log("✨ Succès !");
   } catch(err) {
-    console.error("❌ Erreur :", err);
+    console.error("❌ Erreur:", err);
+    alert("Erreur : " + (err.message || err));
   }
 }
-  const c=S.corvees.find(x=>x.id===id); if(!c) return;
-  const btn = event?.target;
-  if(btn) {
-    btn.style.animation = "bounce 0.4s ease";
-    setTimeout(() => btn.style.animation = "", 400);
-  }
-  
-  let suivant = c.assigne_a;
-  if(c.rotation && S.membres.length > 1){
-    const i = S.membres.findIndex(m => m.id === c.assigne_a);
-    suivant = S.membres[(i + 1) % S.membres.length].id;
-  }
-  
-  const {data:h} = await sb.from("historique").insert({
-    foyer_id:S.foyer.id,
-    corvee_id:c.id,
-    membre_id:S.moi.id,
-    titre:c.titre,
-    points:c.points
-  }).select().single();
-  
-  await sb.from("corvees").update({assigne_a:suivant}).eq("id",id);
-  
-  dernierUndo = {corveeId:id, histoId:h?.id, ancienAssigne:c.assigne_a};
-  
-  if(navigator.vibrate) navigator.vibrate(30);
-  await charger();
-  afficherUndo(c.titre);
-}
-let undoTimer=null;
+
+let undoTimer = null;
+
 function afficherUndo(titre){
   clearTimeout(undoTimer);
   document.getElementById("undo")?.remove();
   
   const d = document.createElement("div");
   d.id = "undo";
-  d.style.cssText = "position:fixed;left:16px;right:16px;bottom:90px;background:#111827;color:#fff;padding:14px 16px;border-radius:14px;display:flex;justify-content:space-between;align-items:center;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.25)";
-  d.innerHTML = `<span>✅ ${esc(titre)}</span><button onclick="annuler()" style="background:none;border:none;color:#a5b4fc;font-weight:700;font-size:16px">Annuler</button>`;
+  d.style.cssText = "position:fixed;left:16px;right:16px;bottom:90px;background:#111827;color:#fff;padding:14px 16px;border-radius:14px;display:flex;justify-content:space-between;align-items:center;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.25);animation:slideIn 0.3s ease";
+  d.innerHTML = `<span>✅ ${esc(titre)}</span><button onclick="annuler()" style="background:none;border:none;color:#a5b4fc;font-weight:700;font-size:16px;cursor:pointer">Annuler</button>`;
   
-  // 🎯 Animation d'apparition
-  d.style.animation = "slideIn 0.3s ease";
   document.body.appendChild(d);
   
   undoTimer = setTimeout(() => {
-    // 🎯 Animation de disparition
-    d.style.animation = "fadeOut 0.3s ease";
-    setTimeout(() => d.remove(), 300);
-  }, 5700); // 6000 - 300 pour que l'animation finisse juste avant la suppression
+    if(d.parentNode) {
+      d.style.animation = "fadeOut 0.3s ease";
+      setTimeout(() => d.remove(), 300);
+    }
+  }, 5700);
 }
+
 async function annuler(){
   if(!dernierUndo) return;
-  const u=dernierUndo; dernierUndo=null;
+  const u = dernierUndo;
+  dernierUndo = null;
   document.getElementById("undo")?.remove();
-  if(u.histoId) await sb.from("historique").delete().eq("id",u.histoId);
-  await sb.from("corvees").update({derniere_fois:u.ancienneDate,assigne_a:u.ancienAssigne}).eq("id",u.corveeId);
-  charger();
+  
+  try {
+    if(u.histoId) await sb.from("historique").delete().eq("id", u.histoId);
+    await sb.from("corvees").update({assigne_a: u.ancienAssigne}).eq("id", u.corveeId);
+    await charger();
+  } catch(err) {
+    console.error("Erreur annuler():", err);
+  }
 }
+
 async function sauverCorvee(id){
-  const o={foyer_id:S.foyer.id,titre:$("#f-titre").value.trim(),piece:$("#f-piece").value.trim(),
-    frequence_jours:+$("#f-freq").value,assigne_a:$("#f-ass").value||null,rotation:$("#f-rot").checked,points:+$("#f-pts").value||1};
+  const o = {
+    foyer_id: S.foyer.id,
+    titre: $("#f-titre").value.trim(),
+    piece: $("#f-piece").value.trim(),
+    frequence_jours: +$("#f-freq").value,
+    assigne_a: $("#f-ass").value || null,
+    rotation: $("#f-rot").checked,
+    points: +$("#f-pts").value || 1
+  };
+  
   if(!o.titre) return alert("Titre requis");
-  if(id) await sb.from("corvees").update(o).eq("id",id); else await sb.from("corvees").insert(o);
-  fermer(); charger();
+  
+  try {
+    if(id) {
+      await sb.from("corvees").update(o).eq("id", id);
+    } else {
+      await sb.from("corvees").insert(o);
+    }
+    fermer();
+    await charger();
+  } catch(err) {
+    alert("Erreur : " + (err.message || err));
+  }
 }
-const MODELES=[
+
+const MODELES = [
   ["Passer l'aspirateur","RDC",7,2],["Passer l'aspirateur","Étage",7,2],
   ["Passer la serpillère","RDC",14,2],["Passer la serpillère","Étage",14,2],
   ["Nettoyer la salle de bain","RDC",7,3],["Nettoyer la salle de bain","Étage",7,3],
@@ -495,178 +521,284 @@ const MODELES=[
   ["Lessive","Buanderie",7,2],["Nettoyer le frigo","Cuisine",30,3],
   ["Dépoussiérer","Salon",14,1],["Nettoyer les vitres","Salon",30,3]
 ];
+
 function formModeles(){
-  const groupes={};
-  MODELES.forEach((m,i)=>{(groupes[m[0]]=groupes[m[0]]||[]).push(i);});
+  const groupes = {};
+  MODELES.forEach((m,i) => {
+    (groupes[m[0]] = groupes[m[0]] || []).push(i);
+  });
+  
   ouvrir(`<h2>Corvées types</h2><p class="s">Cochez celles à ajouter, vous pourrez les modifier ensuite.</p>
-  ${Object.entries(groupes).map(([titre,idx])=>`<div class="t" style="margin-top:14px">${esc(titre)}</div>`+
-    idx.map(i=>`<label style="display:flex;gap:10px;align-items:center;color:var(--txt);font-size:16px;font-weight:500;margin:6px 0"><input type="checkbox" class="mod" value="${i}" style="width:auto"> ${esc(MODELES[i][1])}</label>`).join("")
+  ${Object.entries(groupes).map(([titre,idx]) => 
+    `<div class="t" style="margin-top:14px">${esc(titre)}</div>`+
+    idx.map(i => 
+      `<label style="display:flex;gap:10px;align-items:center;color:var(--txt);font-size:16px;font-weight:500;margin:6px 0">
+        <input type="checkbox" class="mod" value="${i}" style="width:auto"> 
+        ${esc(MODELES[i][1])}
+      </label>`
+    ).join("")
   ).join("")}
   <button class="btn" onclick="ajouterModeles()">Ajouter</button>`);
 }
+
 async function ajouterModeles(){
-  const lignes=[...document.querySelectorAll(".mod:checked")].map(x=>{
-    const m=MODELES[+x.value];
-    return {foyer_id:S.foyer.id,titre:m[0],piece:m[1],frequence_jours:m[2],points:m[3],rotation:true,assigne_a:S.moi.id};
+  const lignes = [...document.querySelectorAll(".mod:checked")].map(x => {
+    const m = MODELES[+x.value];
+    return {
+      foyer_id: S.foyer.id,
+      titre: m[0],
+      piece: m[1],
+      frequence_jours: m[2],
+      points: m[3],
+      rotation: true,
+      assigne_a: S.moi.id
+    };
   });
+  
   if(!lignes.length) return fermer();
-  await sb.from("corvees").insert(lignes);
-  fermer(); charger();
+  
+  try {
+    await sb.from("corvees").insert(lignes);
+    fermer();
+    await charger();
+  } catch(err) {
+    alert("Erreur : " + (err.message || err));
+  }
 }
-async function supprimer(table,id){
+
+async function supprimer(table, id){
   if(!confirm("Supprimer ?")) return;
-  await sb.from(table).delete().eq("id",id); fermer(); charger();
+  
+  try {
+    await sb.from(table).delete().eq("id", id);
+    fermer();
+    await charger();
+  } catch(err) {
+    alert("Erreur : " + (err.message || err));
+  }
 }
+
 async function sauverProjet(id){
-  const o={foyer_id:S.foyer.id,titre:$("#p-titre").value.trim(),statut:$("#p-statut").value,
-    cout:+$("#p-cout").value||0,assigne_a:$("#p-ass").value||null,notes:$("#p-notes").value};
+  const o = {
+    foyer_id: S.foyer.id,
+    titre: $("#p-titre").value.trim(),
+    statut: $("#p-statut").value,
+    cout: +$("#p-cout").value || 0,
+    assigne_a: $("#p-ass").value || null,
+    notes: $("#p-notes").value
+  };
+  
   if(!o.titre) return alert("Titre requis");
-  if(id) await sb.from("projets").update(o).eq("id",id); else await sb.from("projets").insert(o);
-  fermer(); charger();
+  
+  try {
+    if(id) {
+      await sb.from("projets").update(o).eq("id", id);
+    } else {
+      await sb.from("projets").insert(o);
+    }
+    fermer();
+    await charger();
+  } catch(err) {
+    alert("Erreur : " + (err.message || err));
+  }
 }
-async function changerStatut(id,statut){ await sb.from("projets").update({statut}).eq("id",id); charger(); }
+
+async function changerStatut(id, statut){
+  try {
+    await sb.from("projets").update({statut}).eq("id", id);
+    await charger();
+  } catch(err) {
+    alert("Erreur : " + (err.message || err));
+  }
+}
 
 /* ---------- Modales ---------- */
-const fermer=()=>{S.modal=null;$("#modal")?.remove();};
+const fermer = () => {
+  S.modal = null;
+  $("#modal")?.remove();
+};
+
 function ouvrir(html){
-  fermer(); S.modal=1;
-  const d=document.createElement("div");d.id="modal";d.className="modal";
-  d.innerHTML=`<div class="sheet">${html}</div>`;
-  d.onclick=e=>{if(e.target===d)fermer();};
+  fermer();
+  S.modal = 1;
+  const d = document.createElement("div");
+  d.id = "modal";
+  d.className = "modal";
+  d.innerHTML = `<div class="sheet">${html}</div>`;
+  d.onclick = e => {
+    if(e.target === d) fermer();
+  };
   document.body.appendChild(d);
 }
-const optsMembres=sel=>`<option value="">— Personne —</option>`+S.membres.map(m=>`<option value="${m.id}" ${m.id===sel?"selected":""}>${esc(m.nom)}</option>`).join("");
+
+const optsMembres = sel => `<option value="">— Personne —</option>` + S.membres.map(m => `<option value="${m.id}" ${m.id === sel ? "selected" : ""}>${esc(m.nom)}</option>`).join("");
+
 function formCorvee(id){
-  const c=S.corvees.find(x=>x.id===id)||{frequence_jours:7,rotation:true,points:1,assigne_a:S.moi.id};
-  ouvrir(`<h2>${id?"Modifier":"Nouvelle"} corvée</h2>
+  const c = S.corvees.find(x => x.id === id) || {frequence_jours:7, rotation:true, points:1, assigne_a: S.moi.id};
+  
+  ouvrir(`<h2>${id ? "Modifier" : "Nouvelle"} corvée</h2>
   <label>Titre</label><input id="f-titre" value="${esc(c.titre||"")}" placeholder="Passer l'aspirateur">
   <label>Pièce</label><input id="f-piece" value="${esc(c.piece||"")}" placeholder="Salon">
-  <label>Fréquence</label><select id="f-freq">${[[1,"Tous les jours"],[3,"Tous les 3 jours"],[7,"Chaque semaine"],[14,"Toutes les 2 semaines"],[30,"Chaque mois"],[90,"Chaque trimestre"],[180,"Tous les 6 mois"]].map(([v,l])=>`<option value="${v}" ${v==c.frequence_jours?"selected":""}>${l}</option>`).join("")}</select>
-  <label>Assignée à</label><select id="f-ass">${optsMembres(c.assigne_a)}</select>
-  <label>Effort (points)</label><select id="f-pts">${[1,2,3,5].map(v=>`<option ${v==c.points?"selected":""}>${v}</option>`).join("")}</select>
-  <label style="display:flex;gap:10px;align-items:center"><input type="checkbox" id="f-rot" ${c.rotation?"checked":""} style="width:auto"> Alterner automatiquement</label>
+  <label>Fréquence (jours)</label><input id="f-freq" type="number" value="${c.frequence_jours||7}" min="1">
+  <label>Responsable</label><select id="f-ass">${optsMembres(c.assigne_a)}</select>
+  <label>Points</label><input id="f-pts" type="number" value="${c.points||1}" min="1">
+  <label style="display:flex;gap:10px;align-items:center"><input type="checkbox" id="f-rot" ${c.rotation ? "checked" : ""} style="width:auto"> Alterner automatiquement</label>
   <button class="btn" onclick="sauverCorvee('${id||""}')">Enregistrer</button>
-  ${id?`<button class="btn del" onclick="supprimer('corvees','${id}')">Supprimer</button>`:""}`);
+  ${id ? `<button class="btn del" onclick="supprimer('corvees','${id}')">Supprimer</button>` : ""}`);
 }
+
 function formProjet(id){
-  const p=S.projets.find(x=>x.id===id)||{statut:"idee",cout:0,notes:""};
-  ouvrir(`<h2>${id?"Modifier":"Nouveau"} projet</h2>
+  const p = S.projets.find(x => x.id === id) || {statut:"idee", cout:0, notes:""};
+  
+  ouvrir(`<h2>${id ? "Modifier" : "Nouveau"} projet</h2>
   <label>Titre</label><input id="p-titre" value="${esc(p.titre||"")}" placeholder="Peindre la chambre">
-  <label>Statut</label><select id="p-statut">${Object.entries(STATUTS).map(([k,v])=>`<option value="${k}" ${k===p.statut?"selected":""}>${v}</option>`).join("")}</select>
+  <label>Statut</label><select id="p-statut">${Object.entries(STATUTS).map(([k,v]) => `<option value="${k}" ${k === p.statut ? "selected" : ""}>${v}</option>`).join("")}</select>
   <label>Budget estimé (€)</label><input id="p-cout" type="number" inputmode="decimal" value="${p.cout||""}">
   <label>Responsable</label><select id="p-ass">${optsMembres(p.assigne_a)}</select>
   <label>Notes</label><textarea id="p-notes" rows="3">${esc(p.notes||"")}</textarea>
   <button class="btn" onclick="sauverProjet('${id||""}')">Enregistrer</button>
-  ${id?`<button class="btn del" onclick="supprimer('projets','${id}')">Supprimer</button>`:""}`);
+  ${id ? `<button class="btn del" onclick="supprimer('projets','${id}')">Supprimer</button>` : ""}`);
 }
 
 /* ---------- Vues ---------- */
-function carteCorvee(c,montrerBtn=true){
-  const e=echeance(c);
-  const pill=e<0?`<span class="pill late">En retard${c.derniere_fois?` de ${-e} j`:""}</span>`:e===0?`<span class="pill soon">Aujourd'hui</span>`:e<=2?`<span class="pill soon">Dans ${e} j</span>`:`<span class="pill ok">Dans ${e} j</span>`;
-  return `<div class="card row">
-    ${montrerBtn?`<button class="chk" onclick="faire('${c.id}')" aria-label="Fait"></button>`:""}
-    <div class="grow" onclick="formCorvee('${c.id}')"><div class="t">${esc(c.titre)}</div>
-    <div class="s">${esc(c.piece||"—")} · ${pill}</div></div>${av(membre(c.assigne_a))}</div>`;
-}
-function vueToday(){
-  const dues=S.corvees.filter(c=>echeance(c)<=0).sort((a,b)=>echeance(a)-echeance(b));
-  const miennes=dues.filter(c=>c.assigne_a===S.moi.id), autres=dues.filter(c=>c.assigne_a!==S.moi.id);
-  const bientot=S.corvees.filter(c=>echeance(c)>0&&echeance(c)<=3);
-  const doneAuj=S.histo.filter(h=>h.fait_le.slice(0,10)===today()).length;
-  let h=`<div class="card row"><div class="grow"><div class="s">Fait aujourd'hui</div><div class="stat">${doneAuj}</div></div><div style="font-size:42px">${doneAuj>0?"🎉":"🧹"}</div></div>`;
-  h+=`<div class="sec">À faire par moi (${miennes.length})</div>`+(miennes.map(c=>carteCorvee(c)).join("")||`<div class="card s">Rien pour vous, bravo ✨</div>`);
-  if(autres.length) h+=`<div class="sec">Pour l'autre (${autres.length})</div>`+autres.map(c=>carteCorvee(c)).join("");
-  if(bientot.length) h+=`<div class="sec">Bientôt</div>`+bientot.map(c=>carteCorvee(c,false)).join("");
-  if(!S.corvees.length) h+=`<div class="center s">Aucune corvée.<br><br><button class="btn" onclick="formModeles()">＋ Ajouter des corvées types</button><br><button class="btn sec2" onclick="formCorvee()">Créer ma propre corvée</button></div>`;
-  return h;
-}
-function vueSemaine(){
-  const jrs=joursSemaine(), t=today();
-  if(!S.jourSel||!jrs.some(d=>iso(d)===S.jourSel)) S.jourSel=jrs.some(d=>iso(d)===t)?t:iso(jrs[0]);
-  const fmt=d=>d.toLocaleDateString("fr-FR",{day:"numeric",month:"short"});
-  const bande=jrs.map((d,i)=>{
-    const s=iso(d), n=corveesDuJour(s).length;
-    return `<button class="jour ${s===S.jourSel?"on":""} ${s===t?"auj":""}" onclick="S.jourSel='${s}';render()">
-      <span class="jl">${JOURS_COURTS[i]}</span><span class="jn">${d.getDate()}</span>
-      <span class="jb">${n?`<i>${n}</i>`:""}</span></button>`;
-  }).join("");
-  const liste=corveesDuJour(S.jourSel);
-  const mes=liste.filter(c=>c.assigne_a===S.moi.id), autres=liste.filter(c=>c.assigne_a!==S.moi.id);
-  const dSel=new Date(S.jourSel+"T12:00:00");
-  const estAuj=S.jourSel===t;
-  const bloc=(arr)=>arr.map(c=>carteCorvee(c,estAuj)).join("");
-  return `<div class="semnav">
-    <button class="chip" onclick="S.semDec--;S.jourSel=null;render()">‹</button>
-    <div class="grow" style="text-align:center"><div class="t">${fmt(jrs[0])} – ${fmt(jrs[6])}</div>
-    ${S.semDec!==0?`<a class="s" style="color:var(--acc);cursor:pointer" onclick="S.semDec=0;S.jourSel=null;render()">Revenir à aujourd'hui</a>`:`<div class="s">Cette semaine</div>`}</div>
-    <button class="chip" onclick="S.semDec++;S.jourSel=null;render()">›</button></div>
-  <div class="bande">${bande}</div>
-  <div class="sec">${dSel.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})}</div>
-  <div class="semcols">
-    <div><div class="s" style="margin:4px 4px 8px">Pour moi (${mes.length})</div>${bloc(mes)||`<div class="card s">Rien de prévu ✨</div>`}</div>
-    <div><div class="s" style="margin:4px 4px 8px">Pour l'autre (${autres.length})</div>${bloc(autres)||`<div class="card s">Rien de prévu</div>`}</div>
+function carteCorvee(c, montrerBtn = true){
+  const e = echeance(c);
+  let pill, couleur;
+  
+  if(e < 0) {
+    pill = `<span class="pill late">📍 En retard de ${-e}j</span>`;
+    couleur = "#ef4444";
+  } else if(e === 0) {
+    pill = `<span class="pill soon">⚠️ Aujourd'hui</span>`;
+    couleur = "#f59e0b";
+  } else if(e === 1) {
+    pill = `<span class="pill soon">🟡 Demain</span>`;
+    couleur = "#fbbf24";
+  } else if(e <= 3) {
+    pill = `<span class="pill soon">📅 Dans ${e}j</span>`;
+    couleur = "#60a5fa";
+  } else {
+    pill = `<span class="pill ok">✨ Dans ${e}j</span>`;
+    couleur = "#10b981";
+  }
+  
+  return `<div class="card row" style="border-left:4px solid ${couleur}">
+    ${montrerBtn ? `<button class="chk" onclick="faire('${c.id}')" aria-label="Fait"></button>` : ""}
+    <div class="grow" onclick="formCorvee('${c.id}')">
+      <div class="t">${esc(c.titre)}</div>
+      <div class="s">${esc(c.piece || "—")} · ${pill}</div>
+    </div>
+    ${av(membre(c.assigne_a))}
   </div>`;
 }
+
+function vueToday(){
+  const dues = S.corvees.filter(c => echeance(c) <= 0).sort((a,b) => echeance(a) - echeance(b));
+  const miennes = dues.filter(c => c.assigne_a === S.moi.id);
+  const autres = dues.filter(c => c.assigne_a !== S.moi.id);
+  const bientot = S.corvees.filter(c => echeance(c) > 0 && echeance(c) <= 3);
+  const doneAuj = S.histo.filter(h => h.fait_le.slice(0,10) === today()).length;
+  
+  let h = `<div class="card row"><div class="grow"><div class="s">Fait aujourd'hui</div><div class="stat">${doneAuj}</div></div><div style="font-size:42px">${doneAuj > 0 ? "🎉" : "🧹"}</div></div>`;
+  
+  h += `<div class="sec">À faire par moi (${miennes.length})</div>` + (miennes.map(c => carteCorvee(c)).join("") || `<div class="card s">Rien pour vous, bravo ✨</div>`);
+  
+  if(autres.length) h += `<div class="sec">Pour l'autre (${autres.length})</div>` + autres.map(c => carteCorvee(c)).join("");
+  if(bientot.length) h += `<div class="sec">Bientôt</div>` + bientot.map(c => carteCorvee(c, false)).join("");
+  
+  if(!S.corvees.length) h += `<div class="center s">Aucune corvée. Touchez + pour commencer.</div>`;
+  
+  return h;
+}
+
 function vueCorvees(){
-  const pieces=[...new Set(S.corvees.map(c=>c.piece||"Sans pièce"))].sort();
-  return `<button class="btn sec2" style="margin:6px 0 0" onclick="formModeles()">＋ Ajouter des corvées types</button>`+(pieces.map(p=>`<div class="sec">${esc(p)}</div>`+S.corvees.filter(c=>(c.piece||"Sans pièce")===p).map(c=>carteCorvee(c,false)).join("")).join("")||`<div class="center s">Aucune corvée.</div>`);
+  const pieces = [...new Set(S.corvees.map(c => c.piece || "Sans pièce"))].sort();
+  return `<button class="btn sec2" style="margin:6px 0 12px" onclick="formModeles()">＋ Ajouter des corvées types</button>` + 
+    (pieces.map(p => `<div class="sec">${esc(p)}</div>` + S.corvees.filter(c => (c.piece || "Sans pièce") === p).map(c => carteCorvee(c, false)).join("")).join("") || `<div class="center s">Aucune corvée.</div>`);
 }
+
+function vueSemaine(){
+  const jours = joursSemaine();
+  const debut = iso(jours[0]);
+  const fin = iso(jours[6]);
+  
+  return `<div class="semnav">
+    <button onclick="S.semDec--;render()" style="flex:none;width:40px;height:40px;border-radius:50%;border:0;background:#e5e5ea">←</button>
+    <div style="flex:1;text-align:center">
+      <div class="t">${new Date(debut).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})} - ${new Date(fin).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})}</div>
+    </div>
+    <button onclick="S.semDec++;render()" style="flex:none;width:40px;height:40px;border-radius:50%;border:0;background:#e5e5ea">→</button>
+  </div>
+  <div class="bande">${jours.map((d,i) => {
+    const s = iso(d);
+    const corvees = corveesDuJour(s);
+    const isToday = s === today();
+    return `<button class="jour ${isToday ? "auj" : ""} ${S.jourSel === s ? "on" : ""}" onclick="S.jourSel='${s}';render()">
+      <span class="jl">${JOURS_COURTS[i]}</span>
+      <span class="jn">${d.getDate()}</span>
+      <span class="jb"><i>${corvees.length}</i></span>
+    </button>`;
+  }).join("")}</div>
+  ${S.jourSel ? `<div class="sec">${new Date(S.jourSel).toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})}</div>` + (corveesDuJour(S.jourSel).map(c => carteCorvee(c, true)).join("") || `<div class="card s">Aucune corvée ce jour</div>`) : ""}
+  `;
+}
+
 function vueProjets(){
-  const f=S.filtre;
-  const chips=`<div class="chips"><button class="chip ${f==="tous"?"on":""}" onclick="S.filtre='tous';render()">Tous</button>${Object.entries(STATUTS).map(([k,v])=>`<button class="chip ${f===k?"on":""}" onclick="S.filtre='${k}';render()">${v}</button>`).join("")}</div>`;
-  const liste=S.projets.filter(p=>f==="tous"||p.statut===f);
-  const total=liste.filter(p=>p.statut!=="fait").reduce((s,p)=>s+(+p.cout||0),0);
-  return chips+`<div class="card row"><div class="grow"><div class="s">Budget restant</div><div class="stat">${total.toLocaleString("fr-FR")} €</div></div></div>`+
-    (liste.map(p=>`<div class="card"><div class="row"><div class="grow" onclick="formProjet('${p.id}')"><div class="t">${esc(p.titre)}</div>
-    <div class="s">${STATUTS[p.statut]}${p.cout?` · ${(+p.cout).toLocaleString("fr-FR")} €`:""}</div></div>${av(membre(p.assigne_a))}</div>
-    ${p.statut!=="fait"?`<button class="chip" style="margin-top:10px" onclick="changerStatut('${p.id}','${{idee:"afaire",afaire:"encours",encours:"fait"}[p.statut]}')">Passer à l'étape suivante →</button>`:""}</div>`).join("")||`<div class="center s">Aucun projet.</div>`);
+  const f = S.filtre;
+  const chips = `<div class="chips"><button class="chip ${f === "tous" ? "on" : ""}" onclick="S.filtre='tous';render()">Tous</button>${Object.entries(STATUTS).map(([k,v]) => `<button class="chip ${f === k ? "on" : ""}" onclick="S.filtre='${k}';render()">${v}</button>`).join("")}</div>`;
+  const liste = S.projets.filter(p => f === "tous" || p.statut === f);
+  const total = liste.filter(p => p.statut !== "fait").reduce((s,p) => s + (+p.cout || 0), 0);
+  
+  return chips + `<div class="card row"><div class="grow"><div class="s">Budget restant</div><div class="stat">${total.toLocaleString("fr-FR")} €</div></div></div>` +
+    (liste.map(p => `<div class="card"><div class="row"><div class="grow" onclick="formProjet('${p.id}')"><div class="t">${esc(p.titre)}</div>
+    <div class="s">${STATUTS[p.statut]}${p.cout ? ` · ${(+p.cout).toLocaleString("fr-FR")} €` : ""}</div></div>${av(membre(p.assigne_a))}</div>
+    ${p.statut !== "fait" ? `<button class="chip" style="margin-top:10px" onclick="changerStatut('${p.id}','${{idee:"afaire",afaire:"encours",encours:"fait"}[p.statut]}')">Passer à l'étape suivante →</button>` : ""}</div>`).join("") || `<div class="center s">Aucun projet.</div>`);
 }
+
 function vueBilan(){
-  const debut=new Date();debut.setDate(debut.getDate()-7);
-  const sem=S.histo.filter(h=>new Date(h.fait_le)>=debut);
-  const pts=S.membres.map(m=>({m,p:sem.filter(h=>h.membre_id===m.id).reduce((s,h)=>s+h.points,0)}));
-  const tot=pts.reduce((s,x)=>s+x.p,0)||1;
-  return `<div class="sec">7 derniers jours</div><div class="card"><div class="bar">${pts.map(x=>`<div style="width:${x.p/tot*100}%;background:${esc(x.m.couleur)}"></div>`).join("")}</div>
-  ${pts.map(x=>`<div class="row" style="margin-top:10px">${av(x.m)}<div class="grow t">${esc(x.m.nom)}</div><div class="t">${x.p} pts · ${Math.round(x.p/tot*100)} %</div></div>`).join("")}</div>
-  <div class="sec">Activité récente</div>`+
-  (S.histo.slice(0,15).map(h=>`<div class="card row">${av(membre(h.membre_id))}<div class="grow"><div class="t">${esc(h.titre)}</div><div class="s">${new Date(h.fait_le).toLocaleString("fr-FR",{weekday:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})}</div></div><span class="pill">+${h.points}</span></div>`).join("")||`<div class="card s">Pas encore d'activité.</div>`)+
+  const debut = new Date();
+  debut.setDate(debut.getDate() - 7);
+  const sem = S.histo.filter(h => new Date(h.fait_le) >= debut);
+  const pts = S.membres.map(m => ({m, p: sem.filter(h => h.membre_id === m.id).reduce((s,h) => s + h.points, 0)}));
+  const tot = pts.reduce((s,x) => s + x.p, 0) || 1;
+  
+  return `<div class="sec">7 derniers jours</div><div class="card"><div class="bar">${pts.map(x => `<div style="width:${x.p/tot*100}%;background:${esc(x.m.couleur)}"></div>`).join("")}</div>
+  ${pts.map(x => `<div class="row" style="margin-top:10px">${av(x.m)}<div class="grow t">${esc(x.m.nom)}</div><div class="t">${x.p} pts · ${Math.round(x.p/tot*100)} %</div></div>`).join("")}</div>
+  <div class="sec">Activité récente</div>` +
+  (S.histo.slice(0,15).map(h => `<div class="card row">${av(membre(h.membre_id))}<div class="grow"><div class="t">${esc(h.titre)}</div><div class="s">${new Date(h.fait_le).toLocaleString("fr-FR",{weekday:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})}</div></div><span class="pill">+${h.points}</span></div>`).join("") || `<div class="card s">Pas encore d'activité.</div>`) +
   `<div class="sec">Foyer</div>
   <div class="card"><div class="s">Code de ce foyer</div><div class="stat" style="letter-spacing:4px;margin-bottom:12px">${esc(S.foyer.code)}</div>
   <button class="btn" onclick="genererInvitation()">📤 Inviter mon partenaire</button>
   <button class="btn sec2" onclick="if(confirm('Quitter ce foyer sur cet appareil ?')){localStorage.removeItem('foyer');location.reload()}">Se déconnecter</button></div>`;
 }
 
-const TITRES={today:["Aujourd'hui",()=>new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})],corvees:["Corvées",()=>`${S.corvees.length} tâches récurrentes`],projets:["Projets",()=>"Améliorations de la maison"],bilan:["Bilan",()=>"Équité et activité"],semaine:["Semaine",()=>"Vue d'ensemble des 7 jours"]};
+const TITRES = {
+  today: ["Aujourd'hui", () => new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})],
+  corvees: ["Corvées", () => `${S.corvees.length} tâches récurrentes`],
+  projets: ["Projets", () => "Améliorations de la maison"],
+  bilan: ["Bilan", () => "Équité et activité"],
+  semaine: ["Semaine", () => "Vue d'ensemble des 7 jours"]
+};
 
 function render(){
   if(!S.foyer) return;
   if(S.modal) return;
   
-  const [t,sub] = TITRES[S.tab], 
-        vues = {today:vueToday, semaine:vueSemaine, corvees:vueCorvees, projets:vueProjets, bilan:vueBilan};
+  const [t,sub] = TITRES[S.tab];
+  const vues = {today:vueToday, semaine:vueSemaine, corvees:vueCorvees, projets:vueProjets, bilan:vueBilan};
   
   const main = $("main");
   const sc = main?.scrollTop || 0;
   
-  // 🎯 Ajoute une transition au changement de contenu
-  if(main) {
-    main.style.opacity = "0.7";
-    main.style.transition = "opacity 0.2s ease";
-  }
-  
   $("#app").innerHTML = `<header><h1>${t}</h1><p>${sub()}</p></header><main>${vues[S.tab]()}</main>
-    ${["corvees","projets","today","semaine"].includes(S.tab) ? `<button class="fab" onclick="${S.tab==="projets"?"formProjet()":"formCorvee()}">+</button>` : ""}
-    <nav>${[["today","☀️","Aujourd'hui"],["semaine","📅","Semaine"],["corvees","🧹","Corvées"],["projets","🔨","Projets"],["bilan","📊","Bilan"]].map(([k,i,l]) => `<button class="${S.tab===k?"on":""}" onclick="S.tab='${k}';render()"><span>${i}</span>${l}</button>`).join("")}</nav>`;
+    ${["corvees","projets","today","semaine"].includes(S.tab) ? `<button class="fab" onclick="${S.tab === "projets" ? "formProjet()" : "formCorvee()"}">+</button>` : ""}
+    <nav>${[["today","☀️","Aujourd'hui"],["semaine","📅","Semaine"],["corvees","🧹","Corvées"],["projets","🔨","Projets"],["bilan","📊","Bilan"]].map(([k,i,l]) => `<button class="${S.tab === k ? "on" : ""}" onclick="S.tab='${k}';render()"><span>${i}</span>${l}</button>`).join("")}</nav>`;
   
   const newMain = $("main");
-  if(newMain) {
-    newMain.scrollTop = sc;
-    newMain.style.opacity = "1";
-  }
+  if(newMain) newMain.scrollTop = sc;
 }
 
-if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 demarrer();
 </script>
 </body>
