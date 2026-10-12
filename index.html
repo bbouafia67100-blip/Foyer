@@ -376,6 +376,49 @@ async function demarrer(){
 /* ---------- Actions ---------- */
 let dernierUndo = null;
 async function faire(id){
+  console.log("👉 Tentative de marquer comme faite :", id);
+  
+  const c = S.corvees.find(x => x.id === id); 
+  if(!c) {
+    console.error("❌ Corvée introuvable :", id);
+    return;
+  }
+  
+  console.log("✅ Corvée trouvée :", c.titre);
+  
+  let suivant = c.assigne_a;
+  if(c.rotation && S.membres.length > 1){
+    const i = S.membres.findIndex(m => m.id === c.assigne_a);
+    suivant = S.membres[(i + 1) % S.membres.length].id;
+    console.log("🔄 Rotation : assigné à", suivant);
+  }
+  
+  try {
+    const {data:h} = await sb.from("historique").insert({
+      foyer_id:S.foyer.id,
+      corvee_id:c.id,
+      membre_id:S.moi.id,
+      titre:c.titre,
+      points:c.points
+    }).select().single();
+    
+    console.log("📝 Historique enregistré :", h?.id);
+    
+    await sb.from("corvees").update({assigne_a:suivant}).eq("id",id);
+    
+    console.log("💾 Corvée mise à jour");
+    
+    dernierUndo = {corveeId:id, histoId:h?.id, ancienAssigne:c.assigne_a};
+    
+    if(navigator.vibrate) navigator.vibrate(30);
+    await charger();
+    afficherUndo(c.titre);
+    
+    console.log("✨ Tout bon !");
+  } catch(err) {
+    console.error("❌ Erreur :", err);
+  }
+}
   const c=S.corvees.find(x=>x.id===id); if(!c) return;
   const btn = event?.target;
   if(btn) {
