@@ -269,7 +269,7 @@ function vueToday(){
 }
 function vueCorvees(){
   const pieces=[...new Set(S.corvees.map(c=>c.piece||"Sans pièce"))].sort();
-  return `<button class="btn sec2" style="margin:6px 0 0" onclick="formModeles()">＋ Ajouter des corvées types</button>`+
+  return `<button class="btn sec2" style="margin:6px 0 0" onclick="formModeles()">＋ Ajouter des corvées types</button>`+(pieces.map(p=>`<div class="sec">${esc(p)}</div>`+S.corvees.filter(c=>(c.piece||"Sans pièce")===p).map(c=>carteCorvee(c,false)).join("")).join("")||`<div class="center s">Aucune corvée.</div>`);
 }
 function vueProjets(){
   const f=S.filtre;
