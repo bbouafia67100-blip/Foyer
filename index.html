@@ -630,7 +630,46 @@ function vueBilan(){
   <button class="btn" onclick="creerInvitation()">Générer un lien d'invitation</button>
   <button class="btn sec2" onclick="if(confirm('Quitter ce foyer sur cet appareil ?')){localStorage.removeItem('foyer');location.reload()}">Se déconnecter</button></div>`;
 }
+async function creerInvitation(){
+  try {
+    const token = await sb_(sb.rpc("creer_invitation", {
+      p_foyer_id: S.foyer.id,
+      p_created_by: S.moi.id,
+      p_duree_jours: 7
+    }), "création invitation");
 
+    const lien = location.origin + location.pathname + "?invite=" + token;
+
+    ouvrir(`<h2>Lien d'invitation</h2>
+      <p class="s">Valable 7 jours, à usage unique.</p>
+      <input id="lien-invit" readonly value="${esc(lien)}">
+      <button class="btn" onclick="navigator.clipboard.writeText('${lien}');alert('Lien copié !')">Copier le lien</button>`);
+  } catch(err) {
+    // déjà affiché par sb_()
+  }
+}
+function ecranInvitation(token){
+  $("#app").innerHTML = `<div class="center"><div style="font-size:60px">💌</div>
+  <h1>Invitation</h1><p class="s">Vous avez été invité à rejoindre un foyer sur Foyer.</p>
+  <div class="card" style="text-align:left"><label>Votre prénom</label><input id="nom-invit" placeholder="Ex : Alex">
+  <button class="btn" onclick="rejoindreInvitation('${token}')">Rejoindre le foyer</button></div></div>`;
+}
+
+async function rejoindreInvitation(token){
+  const nom = document.getElementById("nom-invit").value.trim();
+  if(!nom) return alert("Entrez votre prénom");
+
+  try {
+    const result = await sb_(sb.rpc("rejoindre_invitation", {p_token: token, p_nom: nom}), "utilisation de l'invitation");
+    const r = result[0];
+
+    localStorage.setItem("foyer", JSON.stringify({foyerId: r.foyer_id, moiId: r.membre_id}));
+    history.replaceState(null, "", location.pathname);
+    await demarrer();
+  } catch(err) {
+    // déjà affiché par sb_()
+  }
+}
 const TITRES = {
   today: ["Aujourd'hui", () => new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})],
   corvees: ["Corvées", () => `${S.corvees.length} tâches récurrentes`],
@@ -709,7 +748,11 @@ async function rejoindre(){
 
 async function demarrer(){
   console.log("🚀 Démarrage...");
-  
+  const params = new URLSearchParams(location.search);
+const token = params.get("invite");
+if(token && !localStorage.getItem("foyer")){
+  return ecranInvitation(token);
+}
   const ls = JSON.parse(localStorage.getItem("foyer") || "null");
   if(!ls) return ecranAccueil();
   
