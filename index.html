@@ -9,6 +9,7 @@
 <meta name="theme-color" content="#f6f5f1">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="data:,">
 <title>Foyer</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -82,6 +83,16 @@ input,select,textarea{width:100%;padding:13px;border:1px solid var(--line);borde
 const SUPABASE_URL = "https://lsfqyzppexbdbcvdomjc.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxzZnF5enBwZXhiZGJjdmRvbWpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4MDAwNDMsImV4cCI6MjEwNzM3NjA0M30.-OeFwdutTnGOFQuDdV7ZExUV_sWMN8ql9ZuNEBON41I";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+async function sb_(promise, actionLabel = "opération") {
+  const { data, error } = await promise;
+  if (error) {
+    console.error(`❌ Erreur ${actionLabel} :`, error);
+    alert(`Erreur ${actionLabel} : ${error.message}`);
+    throw error;
+  }
+  return data;
+}
 
 const COULEURS = ["#4f46e5","#ec4899","#0ea5e9","#f59e0b"];
 const STATUTS = {idee:"💡 Idée",afaire:"📋 À faire",encours:"🔧 En cours",fait:"✅ Fait"};
@@ -171,14 +182,14 @@ function aviconsMembres(liste) {
 
 async function charger(){
   console.log("📥 Chargement des données...");
-  
+
   if(!S.foyer || !S.moi) {
     console.warn("⚠️ Pas de foyer/moi");
     return;
   }
-  
+
   const f = S.foyer.id;
-  
+
   try {
     const [m, c, p, h] = await Promise.all([
       sb.from("membres").select("*").eq("foyer_id", f),
@@ -186,6 +197,13 @@ async function charger(){
       sb.from("projets").select("*").eq("foyer_id", f),
       sb.from("historique").select("*").eq("foyer_id", f).order("fait_le", {ascending: false}).limit(500)
     ]);
+
+    if(m.error || c.error || p.error || h.error) {
+      const err = m.error || c.error || p.error || h.error;
+      console.error("❌ Erreur chargement :", err);
+      alert("Erreur chargement : " + err.message);
+      return;
+    }
 
     S.membres = m.data || [];
     S.corvees = c.data || [];
@@ -232,29 +250,28 @@ async function annuler(){
   const u = dernierUndo;
   dernierUndo = null;
   document.getElementById("undo")?.remove();
-  
+
   try {
-    if(u.histoId) await sb.from("historique").delete().eq("id", u.histoId);
-    await sb.from("corvees").update({derniere_fois: u.ancienneDate, assigne_a_list: u.ancienAssigne}).eq("id", u.corveeId);
+    if(u.histoId) await sb_(sb.from("historique").delete().eq("id", u.histoId), "annulation historique");
+    await sb_(sb.from("corvees").update({derniere_fois: u.ancienneDate, assigne_a_list: u.ancienAssigne}).eq("id", u.corveeId), "annulation corvée");
     await charger();
   } catch(err) {
-    console.error("❌ Erreur annulation :", err);
-    alert("Erreur : " + err.message);
+    // déjà affiché par sb_()
   }
 }
 
 async function faire(id){
   console.log("👉 Marquer comme faite :", id);
-  
+
   const c = S.corvees.find(x => x.id === id);
   if(!c) {
     console.error("❌ Corvée introuvable");
     return;
   }
-  
+
   const dateAuj = today();
   const assignesActuels = c.assigne_a_list && c.assigne_a_list.length > 0 ? c.assigne_a_list : (c.assigne_a ? [c.assigne_a] : []);
-  
+
   try {
     const historiqueEntrees = assignesActuels.map(membre_id => ({
       foyer_id: S.foyer.id,
@@ -265,12 +282,12 @@ async function faire(id){
       fait_le: dateAuj,
       fait_par: S.moi.id
     }));
-    
-    const histoResult = await sb.from("historique").insert(historiqueEntrees).select();
-    const h = histoResult.data && histoResult.data[0];
-    
+
+    const histoData = await sb_(sb.from("historique").insert(historiqueEntrees).select(), "ajout historique");
+    const h = histoData && histoData[0];
+
     console.log("💾 Historique créé pour", assignesActuels.length, "personne(s)");
-    
+
     let suivants = assignesActuels;
     if(c.rotation && S.membres.length > 1) {
       suivants = assignesActuels.map(ancien_id => {
@@ -278,31 +295,28 @@ async function faire(id){
         return S.membres[(i + 1) % S.membres.length].id;
       });
     }
-    
-    console.log("💾 Mise à jour derniere_fois à :", dateAuj);
-    
-    await sb.from("corvees").update({
+
+    await sb_(sb.from("corvees").update({
       derniere_fois: dateAuj,
       assigne_a_list: suivants
-    }).eq("id", id);
-    
+    }).eq("id", id), "mise à jour corvée");
+
     dernierUndo = {
       corveeId: id,
       histoId: h ? h.id : null,
       ancienneDate: c.derniere_fois || null,
       ancienAssigne: c.assigne_a_list || [c.assigne_a]
     };
-    
+
     if(navigator.vibrate) navigator.vibrate(30);
     await charger();
     afficherUndo(c.titre);
-    
+
   } catch(err) {
-    console.error("❌ Erreur :", err);
-    alert("Erreur en sauvegardant : " + err.message);
+    // déjà affiché par sb_()
   }
 }
-
+  
 const MODELES = [
   ["Passer l'aspirateur","RDC",7,2],["Passer l'aspirateur","Étage",7,2],
   ["Passer la serpillère","RDC",14,2],["Passer la serpillère","Étage",14,2],
@@ -348,36 +362,35 @@ async function ajouterModeles(){
       assigne_a_list: [S.moi.id]
     };
   });
-  
+
   if(!lignes.length) return fermer();
-  
+
   try {
-    await sb.from("corvees").insert(lignes);
+    await sb_(sb.from("corvees").insert(lignes), "ajout des modèles");
     console.log("✅ Modèles ajoutés");
     fermer();
     await charger();
   } catch(err) {
-    console.error("❌ Erreur insertion :", err);
-    alert("Erreur : " + err.message);
+    // déjà affiché par sb_()
   }
 }
 
 async function supprimer(table, id){
   if(!confirm("Supprimer ?")) return;
-  
+
   try {
-    await sb.from(table).delete().eq("id", id);
+    await sb_(sb.from(table).delete().eq("id", id), "suppression");
     fermer();
     await charger();
   } catch(err) {
-    alert("Erreur : " + (err.message || err));
+    // déjà affiché par sb_()
   }
 }
 
 async function sauverCorvee(id){
   const assignesCoches = [...document.querySelectorAll(".f-membre:checked")].map(x => x.value);
   const assignesFinal = assignesCoches.length > 0 ? assignesCoches : null;
-  
+
   const o = {
     foyer_id: S.foyer.id,
     titre: document.getElementById("f-titre").value.trim(),
@@ -387,21 +400,20 @@ async function sauverCorvee(id){
     rotation: document.getElementById("f-rot").checked,
     points: +document.getElementById("f-pts").value || 1
   };
-  
+
   if(!o.titre) return alert("Titre requis");
   if(!assignesFinal) return alert("Sélectionnez au moins une personne");
-  
+
   try {
     if(id) {
-      await sb.from("corvees").update(o).eq("id", id);
+      await sb_(sb.from("corvees").update(o).eq("id", id), "modification corvée");
     } else {
-      await sb.from("corvees").insert(o);
+      await sb_(sb.from("corvees").insert(o), "ajout corvée");
     }
     fermer();
     await charger();
   } catch(err) {
-    console.error("❌ Erreur :", err);
-    alert("Erreur : " + err.message);
+    // déjà affiché par sb_()
   }
 }
 
@@ -414,28 +426,28 @@ async function sauverProjet(id){
     assigne_a: document.getElementById("p-ass").value || null,
     notes: document.getElementById("p-notes").value
   };
-  
+
   if(!o.titre) return alert("Titre requis");
-  
+
   try {
     if(id) {
-      await sb.from("projets").update(o).eq("id", id);
+      await sb_(sb.from("projets").update(o).eq("id", id), "modification projet");
     } else {
-      await sb.from("projets").insert(o);
+      await sb_(sb.from("projets").insert(o), "ajout projet");
     }
     fermer();
     await charger();
   } catch(err) {
-    alert("Erreur : " + (err.message || err));
+    // déjà affiché par sb_()
   }
 }
 
 async function changerStatut(id, statut){
   try {
-    await sb.from("projets").update({statut}).eq("id", id);
+    await sb_(sb.from("projets").update({statut}).eq("id", id), "changement de statut");
     await charger();
   } catch(err) {
-    alert("Erreur : " + (err.message || err));
+    // déjà affiché par sb_()
   }
 }
 
