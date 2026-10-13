@@ -260,12 +260,18 @@ async function annuler(){
   }
 }
 
+let enCours = new Set();
+
 async function faire(id){
+  if(enCours.has(id)) return; // empêche les clics multiples pendant le traitement
+  enCours.add(id);
+
   console.log("👉 Marquer comme faite :", id);
 
   const c = S.corvees.find(x => x.id === id);
   if(!c) {
     console.error("❌ Corvée introuvable");
+    enCours.delete(id);
     return;
   }
 
@@ -285,8 +291,6 @@ async function faire(id){
 
     const histoData = await sb_(sb.from("historique").insert(historiqueEntrees).select(), "ajout historique");
     const h = histoData && histoData[0];
-
-    console.log("💾 Historique créé pour", assignesActuels.length, "personne(s)");
 
     let suivants = assignesActuels;
     if(c.rotation && S.membres.length > 1) {
@@ -314,6 +318,8 @@ async function faire(id){
 
   } catch(err) {
     // déjà affiché par sb_()
+  } finally {
+    enCours.delete(id);
   }
 }
   
