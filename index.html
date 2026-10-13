@@ -263,8 +263,11 @@ async function annuler(){
 let enCours = new Set();
 
 async function faire(id){
-  if(enCours.has(id)) return; // empêche les clics multiples pendant le traitement
+  if(enCours.has(id)) return;
   enCours.add(id);
+
+  const btn = document.querySelector(`button.chk[onclick="faire('${id}')"]`);
+  if(btn){ btn.classList.add("on"); btn.disabled = true; }
 
   console.log("👉 Marquer comme faite :", id);
 
@@ -317,7 +320,7 @@ async function faire(id){
     afficherUndo(c.titre);
 
   } catch(err) {
-    // déjà affiché par sb_()
+    if(btn){ btn.classList.remove("on"); btn.disabled = false; }
   } finally {
     enCours.delete(id);
   }
