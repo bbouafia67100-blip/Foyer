@@ -552,7 +552,7 @@ function carteCorvee(c, montrerBtn = true){
   const avatars = aviconsMembres(c.assigne_a_list);
   
   return `<div class="card row" style="border-left:4px solid ${couleur}">
-    ${montrerBtn ? `<button class="chk" onclick="faire('${c.id}')" aria-label="Fait"></button>` : ""}
+    ${montrerBtn ? `<button class="chk" onpointerdown="faire('${c.id}')" aria-label="Fait"></button>` : ""}
     <div class="grow" onclick="formCorvee('${c.id}')">
       <div class="t">${esc(c.titre)}</div>
       <div class="s">${esc(c.piece || "—")} · ${pill}</div>
