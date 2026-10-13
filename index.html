@@ -620,13 +620,14 @@ function vueBilan(){
   const sem = S.histo.filter(h => new Date(h.fait_le) >= debut);
   const pts = S.membres.map(m => ({m, p: sem.filter(h => h.membre_id === m.id).reduce((s,h) => s + h.points, 0)}));
   const tot = pts.reduce((s,x) => s + x.p, 0) || 1;
-  
+
   return `<div class="sec">7 derniers jours</div><div class="card"><div class="bar">${pts.map(x => `<div style="width:${x.p/tot*100}%;background:${esc(x.m.couleur)}"></div>`).join("")}</div>
   ${pts.map(x => `<div class="row" style="margin-top:10px">${av(x.m)}<div class="grow t">${esc(x.m.nom)}</div><div class="t">${x.p} pts · ${Math.round(x.p/tot*100)} %</div></div>`).join("")}</div>
   <div class="sec">Activité récente</div>` +
   (S.histo.slice(0,15).map(h => `<div class="card row">${av(membre(h.membre_id))}<div class="grow"><div class="t">${esc(h.titre)}</div><div class="s">${new Date(h.fait_le).toLocaleString("fr-FR",{weekday:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})}</div></div><span class="pill">+${h.points}</span></div>`).join("") || `<div class="card s">Pas encore d'activité.</div>`) +
   `<div class="sec">Foyer</div>
   <div class="card"><div class="s">Code de ce foyer</div><div class="stat" style="letter-spacing:4px;margin-bottom:12px">${esc(S.foyer.code)}</div>
+  <button class="btn" onclick="creerInvitation()">Générer un lien d'invitation</button>
   <button class="btn sec2" onclick="if(confirm('Quitter ce foyer sur cet appareil ?')){localStorage.removeItem('foyer');location.reload()}">Se déconnecter</button></div>`;
 }
 
